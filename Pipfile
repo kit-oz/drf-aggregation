@@ -1,0 +1,15 @@
+[[source]]
+url = "https://pypi.python.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django-rest-framework = "*"
+drf-complex-filter = "*"
+
+[dev-packages]
+pbr = "*"
+
+[packages.django-postgres-stats]
+git = "https://github.com/kit-oz/django-postgres-stats.git"
+editable = true
