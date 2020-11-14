@@ -7,7 +7,7 @@ def get_aggregation(
         queryset,
         annotation,
         group_by: list = None,
-        order_by: str = None,
+        order_by: list = None,
         limit: int = None,
         show_other: bool = False
 ) -> (dict, list):
@@ -16,7 +16,7 @@ def get_aggregation(
     :param queryset: Django Queryset for aggregation
     :param annotation:
     :param group_by: list of fields to group the result
-    :param order_by: field to sort the result
+    :param order_by: list of fields to sort the result
     :param limit: number of record to return
     :param show_other: if a limit is set,
         combine other records into an additional group
@@ -25,14 +25,14 @@ def get_aggregation(
     if not group_by:
         return queryset.aggregate(value=annotation)
 
-    queryset = queryset.values(*group_by)
-    queryset = queryset.annotate(value=annotation)
+    aggregation = queryset.values(*group_by)
+    aggregation = aggregation.annotate(value=annotation)
     if order_by:
-        queryset = queryset.order_by(order_by)
+        aggregation = aggregation.order_by(*order_by)
     if not limit:
-        return list(queryset)
+        return list(aggregation)
 
-    aggregation = list(queryset[: limit])
+    aggregation = list(aggregation[: limit])
     if not show_other:
         return aggregation
 
@@ -48,32 +48,12 @@ def get_aggregation(
         annotation=annotation,
         group_by=group_by[1:]
     )
-    results = _merged_aggregations(
+    aggregation = _merge_aggregations(
         aggregation=aggregation,
         additional_aggregation=additional_aggregation,
         field_name=main_group_name,
     )
-    return results
-
-
-def _get_results(
-        queryset: models.QuerySet,
-        annotation,
-        group_by,
-        order_by,
-        limit
-) -> (dict, list):
-    if not group_by:
-        return queryset.aggregate(value=annotation)
-
-    queryset = queryset.values(*group_by)
-    queryset = queryset.annotate(value=annotation)
-    if order_by:
-        queryset = queryset.order_by(order_by)
-    if limit:
-        queryset = queryset[: limit]
-
-    return list(queryset)
+    return aggregation
 
 
 def _get_queryset_without_groups(queryset: models.QuerySet,
@@ -87,7 +67,7 @@ def _get_queryset_without_groups(queryset: models.QuerySet,
     return queryset
 
 
-def _merged_aggregations(
+def _merge_aggregations(
         aggregation: list,
         additional_aggregation: (dict, list),
         field_name: str

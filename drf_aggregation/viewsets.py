@@ -11,6 +11,57 @@ from .utils import get_aggregation
 
 
 class AggregationViewSet(GenericViewSet):
+    def aggregation(self, request):
+        annotation = self._get_annotation(request=request)
+
+        result = get_aggregation(
+            queryset=self.filter_queryset(self.get_queryset()),
+            annotation=annotation,
+            group_by=self._get_group_by(request=request),
+            order_by=self._get_order(request=request),
+            limit=self._get_limit(request=request),
+            show_other=self._get_show_other(request=request),
+        )
+
+        return Response(result)
+
+    def _get_annotation(self, request):
+        aggregation = self._get_aggregation(request)
+        if aggregation == 'count':
+            return models.Count('id')
+
+        if aggregation == 'sum':
+            aggregation_field = self._get_aggregation_field(request=request)
+            return models.Sum(aggregation_field)
+
+        if aggregation == 'average':
+            aggregation_field = self._get_aggregation_field(request=request)
+            return models.Avg(aggregation_field)
+
+        if aggregation == 'minimum':
+            aggregation_field = self._get_aggregation_field(request=request)
+            return models.Min(aggregation_field)
+
+        if aggregation == 'maximum':
+            aggregation_field = self._get_aggregation_field(request=request)
+            return models.Max(aggregation_field)
+
+        if aggregation == 'percentile':
+            aggregation_field = self._get_aggregation_field(request=request)
+            percentile = self._get_percentile(request)
+            return Percentile(aggregation_field, percentile)
+
+        if aggregation == 'percent':
+            raise NotImplementedError("Grouped percentage not yet implemented")
+
+    @staticmethod
+    def _get_aggregation(request) -> str:
+        aggregation = request.query_params.get("aggregation", None)
+        if not aggregation:
+            raise ValidationError({"error": "Aggregation is mandatory."})
+
+        return aggregation
+
     @staticmethod
     def _get_group_by(request) -> list:
         group_by = request.query_params.get("groupBy", None)
@@ -19,12 +70,14 @@ class AggregationViewSet(GenericViewSet):
         return group_by
 
     @staticmethod
-    def _get_order_by(request) -> (str, None):
-        order = request.query_params.get("orderBy", None)
+    def _get_order(request) -> list:
+        order = request.query_params.get("order", None)
         if order == "asc":
-            return "value"
+            return ["value"]
         if order == "desc":
-            return "-value"
+            return ["-value"]
+
+        return []
 
     @staticmethod
     def _get_limit(request) -> (int, None):
@@ -67,91 +120,3 @@ class AggregationViewSet(GenericViewSet):
             raise ValidationError({"error": "Percentile is mandatory."})
 
         return percentile
-
-    def count(self, request):
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=models.Count('id'),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def sum(self, request):
-        aggregation_field = self._get_aggregation_field(request=request)
-
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=models.Sum(aggregation_field),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def average(self, request):
-        aggregation_field = self._get_aggregation_field(request=request)
-
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=models.Avg(aggregation_field),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def minimum(self, request):
-        aggregation_field = self._get_aggregation_field(request=request)
-
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=models.Min(aggregation_field),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def maximum(self, request):
-        aggregation_field = self._get_aggregation_field(request=request)
-
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=models.Max(aggregation_field),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def percentile(self, request):
-        aggregation_field = self._get_aggregation_field(request=request)
-        percentile = self._get_percentile(request)
-
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
-            annotation=Percentile(aggregation_field, percentile),
-            group_by=self._get_group_by(request=request),
-            order_by=self._get_order_by(request=request),
-            limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
-
-        return Response(result)
-
-    def percent(self, request):
-        additional_query = self._get_additional_query(request)
-
-        raise NotImplementedError("Grouped percentage not yet implemented")
