@@ -2,11 +2,11 @@ import json
 
 from django.db import models
 from drf_complex_filter.utils import generate_query_from_dict
-from postgres_stats.aggregates import Percentile
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
+from .aggregates import Percentile
 from .utils import get_aggregation
 
 
