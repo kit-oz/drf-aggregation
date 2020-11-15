@@ -9,7 +9,7 @@ class AggregationRouter(SimpleRouter):
 
     routes = [
         Route(
-            url="^{prefix}/aggregation$",
+            url="{prefix}/aggregation",
             mapping={"get": "aggregation"},
             name="{basename}-aggregation",
             detail=False,
