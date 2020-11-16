@@ -54,6 +54,8 @@ class AggregationViewSet(GenericViewSet):
         if aggregation == 'percent':
             raise NotImplementedError("Grouped percentage not yet implemented")
 
+        raise ValidationError({"error": "Unknown aggregation."})
+
     @staticmethod
     def _get_aggregation(request) -> str:
         aggregation = request.query_params.get("aggregation", None)
