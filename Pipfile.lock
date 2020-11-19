@@ -53,11 +53,11 @@
         },
         "drf-complex-filter": {
             "hashes": [
-                "sha256:381882c28f8ce09385662de9752b25abd19f0c25ed9f277be6b1c6963ce28a3d",
-                "sha256:b462a529f5ed818c6e850f14e45a9595eec4f74d925b6a606bd2c9218f98a82b"
+                "sha256:21dd0228e6695511296b3d77415fcd948803de165bd31b0c70517a8724fad691",
+                "sha256:586f5380789daebd811675533a2f17fbc8745fdd9d9523fb797e36989018935d"
             ],
             "index": "pypi",
-            "version": "==0.0.1"
+            "version": "==0.1.0"
         },
         "psycopg2-binary": {
             "hashes": [

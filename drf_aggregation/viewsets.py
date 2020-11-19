@@ -52,7 +52,7 @@ class AggregationViewSet(GenericViewSet):
             return Percentile(aggregation_field, percentile)
 
         if aggregation == 'percent':
-            raise NotImplementedError("Grouped percentage not yet implemented")
+            raise NotImplementedError("Percent not yet implemented")
 
         raise ValidationError({"error": "Unknown aggregation."})
 
