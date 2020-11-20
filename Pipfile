@@ -9,6 +9,8 @@ drf-complex-filter = "*"
 
 [dev-packages]
 pbr = "*"
+parameterized = "*"
+psycopg2-binary = "*"
 
 [packages.django-postgres-stats]
 git = "https://github.com/kit-oz/django-postgres-stats.git"

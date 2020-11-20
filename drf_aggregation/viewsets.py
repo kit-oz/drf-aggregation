@@ -49,7 +49,9 @@ class AggregationViewSet(GenericViewSet):
         if aggregation == 'percentile':
             aggregation_field = self._get_aggregation_field(request=request)
             percentile = self._get_percentile(request)
-            return Percentile(aggregation_field, percentile)
+            # TODO replace hardcoded output field
+            return Percentile(aggregation_field, percentile,
+                              output_field=models.FloatField())
 
         if aggregation == 'percent':
             raise NotImplementedError("Percent not yet implemented")
