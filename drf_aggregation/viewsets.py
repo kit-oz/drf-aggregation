@@ -7,26 +7,29 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from .aggregates import Percentile
-from .utils import get_aggregation
+from .utils import Aggreagtor
 
 
 class AggregationViewSet(GenericViewSet):
     def aggregation(self, request):
-        annotation = self._get_annotation(request=request)
+        aggregation = self._get_aggregation(request)
+        annotation = self._get_annotation(aggregation=aggregation,
+                                          request=request)
 
-        result = get_aggregation(
-            queryset=self.filter_queryset(self.get_queryset()),
+        aggregator = Aggreagtor(
+            queryset=self.filter_queryset(self.get_queryset()))
+
+        result = aggregator.get_database_aggregation(
             annotation=annotation,
             group_by=self._get_group_by(request=request),
-            order_by=self._get_order(request=request),
             limit=self._get_limit(request=request),
-            show_other=self._get_show_other(request=request),
-        )
+            limit_field=self._get_limit_by_field(request=request),
+            order=self._get_order(request=request),
+            show_other=self._get_show_other(request=request))
 
         return Response(result)
 
-    def _get_annotation(self, request):
-        aggregation = self._get_aggregation(request)
+    def _get_annotation(self, aggregation: str, request):
         if aggregation == 'count':
             return models.Count('id')
 
@@ -49,10 +52,16 @@ class AggregationViewSet(GenericViewSet):
         if aggregation == 'percentile':
             aggregation_field = self._get_aggregation_field(request=request)
             percentile = self._get_percentile(request)
+            output_type = self._get_output_type(request=request)
+            if output_type == 'float':
+                return Percentile(aggregation_field, percentile,
+                                  output_field=models.FloatField())
             return Percentile(aggregation_field, percentile)
 
         if aggregation == 'percent':
-            raise NotImplementedError("Grouped percentage not yet implemented")
+            raise NotImplementedError("Percent not yet implemented")
+
+        raise ValidationError({"error": "Unknown aggregation."})
 
     @staticmethod
     def _get_aggregation(request) -> str:
@@ -64,25 +73,23 @@ class AggregationViewSet(GenericViewSet):
 
     @staticmethod
     def _get_group_by(request) -> list:
-        group_by = request.query_params.get("groupBy", None)
+        group_by = request.query_params.get("groupByFields", None)
         group_by = group_by.split(",") if group_by else []
 
         return group_by
 
     @staticmethod
-    def _get_order(request) -> list:
-        order = request.query_params.get("order", None)
-        if order == "asc":
-            return ["value"]
-        if order == "desc":
-            return ["-value"]
-
-        return []
+    def _get_order(request) -> (str, None):
+        return request.query_params.get("order", None)
 
     @staticmethod
     def _get_limit(request) -> (int, None):
         limit = request.query_params.get("limit", None)
         return int(limit) if limit else None
+
+    @staticmethod
+    def _get_limit_by_field(request) -> (str, None):
+        return request.query_params.get("limitByField", None)
 
     @staticmethod
     def _get_show_other(request) -> bool:
@@ -120,3 +127,7 @@ class AggregationViewSet(GenericViewSet):
             raise ValidationError({"error": "Percentile is mandatory."})
 
         return percentile
+
+    @staticmethod
+    def _get_output_type(request) -> (str, None):
+        return request.query_params.get("outputType", None)

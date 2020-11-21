@@ -1,0 +1,51 @@
+from datetime import date, datetime, timedelta
+
+RECORDS = [
+    {"group1": "2",
+     "group2": "1",
+     "integer": 0,
+     "float": 0,
+     "date": date(2020, 11, 1),
+     "datetime": datetime(2020, 11, 1, 0, 1),
+     "duration": timedelta(days=1)},
+
+    {"group1": "1",
+     "group2": "2",
+     "integer": 1,
+     "float": 1,
+     "date": date(2020, 11, 2),
+     "datetime": datetime(2020, 11, 1, 0, 2),
+     "duration": timedelta(days=2)},
+
+    {"group1": "1",
+     "group2": "1",
+     "integer": 2,
+     "float": 2,
+     "date": date(2020, 11, 3),
+     "datetime": datetime(2020, 11, 1, 0, 3),
+     "duration": timedelta(days=3)},
+
+    {"group1": "3",
+     "group2": "2",
+     "integer": 3,
+     "float": 3,
+     "date": date(2020, 11, 4),
+     "datetime": datetime(2020, 11, 1, 0, 4),
+     "duration": timedelta(days=4)},
+
+    {"group1": "3",
+     "group2": "1",
+     "integer": 4,
+     "float": 4,
+     "date": date(2020, 11, 5),
+     "datetime": datetime(2020, 11, 1, 0, 5),
+     "duration": timedelta(days=5)},
+
+    {"group1": "3",
+     "group2": "3",
+     "integer": 5,
+     "float": 5,
+     "date": date(2020, 11, 6),
+     "datetime": datetime(2020, 11, 1, 0, 6),
+     "duration": timedelta(days=6)},
+]
