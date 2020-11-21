@@ -5,6 +5,7 @@ from drf_complex_filter.utils import generate_query_from_dict
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
+from .aggregates import CountIf
 from .aggregates import Percentile
 from .utils import Aggregator
 
@@ -12,14 +13,13 @@ from .utils import Aggregator
 class AggregationMixin:
     def aggregation(self, request):
         aggregation = self._get_aggregation(request)
-        annotation = self._get_annotation(aggregation=aggregation,
-                                          request=request)
+        annotations = self._get_annotation(aggregation=aggregation,
+                                           request=request)
+        queryset = self.filter_queryset(self.get_queryset())
 
-        aggregator = Aggregator(
-            queryset=self.filter_queryset(self.get_queryset()))
-
+        aggregator = Aggregator(queryset=queryset)
         result = aggregator.get_database_aggregation(
-            annotation=annotation,
+            annotations=annotations,
             group_by=self._get_group_by(request=request),
             limit=self._get_limit(request=request),
             limit_field=self._get_limit_by_field(request=request),
@@ -29,37 +29,44 @@ class AggregationMixin:
 
         return Response(result)
 
-    def _get_annotation(self, aggregation: str, request):
+    def _get_annotation(self, aggregation: str, request) -> dict:
         if aggregation == 'count':
-            return models.Count('id')
+            return {"value": models.Count('id')}
 
         if aggregation == 'sum':
             aggregation_field = self._get_aggregation_field(request=request)
-            return models.Sum(aggregation_field)
+            return {"value": models.Sum(aggregation_field)}
 
         if aggregation == 'average':
             aggregation_field = self._get_aggregation_field(request=request)
-            return models.Avg(aggregation_field)
+            return {"value": models.Avg(aggregation_field)}
 
         if aggregation == 'minimum':
             aggregation_field = self._get_aggregation_field(request=request)
-            return models.Min(aggregation_field)
+            return {"value": models.Min(aggregation_field)}
 
         if aggregation == 'maximum':
             aggregation_field = self._get_aggregation_field(request=request)
-            return models.Max(aggregation_field)
+            return {"value": models.Max(aggregation_field)}
 
         if aggregation == 'percentile':
             aggregation_field = self._get_aggregation_field(request=request)
             percentile = self._get_percentile(request)
             output_type = self._get_output_type(request=request)
             if output_type == 'float':
-                return Percentile(aggregation_field, percentile,
-                                  output_field=models.FloatField())
-            return Percentile(aggregation_field, percentile)
+                return {"value": Percentile(aggregation_field, percentile,
+                                            output_field=models.FloatField())}
+            return {"value": Percentile(aggregation_field, percentile)}
 
-        if aggregation == 'percent':
-            raise NotImplementedError("Percent not yet implemented")
+        if aggregation == "percent":
+            additional_query = self._get_additional_query(request=request)
+            return {
+                "numerator": CountIf(additional_query),
+                "denominator": models.Count("id"),
+                "value": models.ExpressionWrapper(
+                    models.F("numerator") * 1.0 / models.F("denominator"),
+                    output_field=models.FloatField())
+            }
 
         raise ValidationError({"error": "Unknown aggregation."})
 

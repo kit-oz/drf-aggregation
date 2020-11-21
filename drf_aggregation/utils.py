@@ -1,4 +1,5 @@
 from django.db import models
+from .aggregates import CountIf
 
 
 class Aggregator:
@@ -13,7 +14,7 @@ class Aggregator:
 
     def get_database_aggregation(
             self,
-            annotation,
+            annotations: dict,
             group_by: list = None,
             limit: int = None,
             limit_field: str = None,
@@ -23,7 +24,7 @@ class Aggregator:
     ) -> (dict, list):
         """Get the aggregation result
 
-        :param annotation: Django aggregation annotation
+        :param annotations: Django aggregation annotation
         :param group_by: list of fields to group the result
         :param limit: number of groups to return
         :param limit_field: on which field the limit is set
@@ -36,22 +37,27 @@ class Aggregator:
             without groupings - a dictionary of the form {value: result}
         """
         if not group_by:
-            return dict(self.queryset.aggregate(value=annotation))
+            aggregation = self.queryset.annotate(
+                _group=models.Value(1, output_field=models.IntegerField()))
+            aggregation = aggregation.values("_group")
+            aggregation = aggregation.annotate(**annotations)
+            aggregation = aggregation.values(*annotations.keys())
+            return dict(aggregation[0])
 
         if not limit:
             aggregation = self.queryset.values(*group_by)
-            aggregation = aggregation.annotate(value=annotation)
+            aggregation = aggregation.annotate(**annotations)
             return list(aggregation)
 
         top_groups = self._get_top_groups(field_name=limit_field,
-                                          annotation=annotation,
+                                          annotations=annotations,
                                           limit=limit,
                                           order=order)
 
         aggregation = self._get_queryset_with_groups(field_name=limit_field,
                                                      values=top_groups)
         aggregation = aggregation.values(*group_by)
-        aggregation = aggregation.annotate(value=annotation)
+        aggregation = aggregation.annotate(**annotations)
 
         if not show_other:
             return list(aggregation)
@@ -65,7 +71,7 @@ class Aggregator:
 
         aggregator = Aggregator(queryset=additional_queryset)
         additional_aggregation = aggregator.get_database_aggregation(
-            annotation=annotation,
+            annotations=annotations,
             group_by=group_by[1:])
         aggregation = self._merge_aggregations(
             aggregation=aggregation,
@@ -77,15 +83,15 @@ class Aggregator:
 
     def _get_top_groups(self,
                         field_name: str,
-                        annotation,
+                        annotations,
                         limit: int,
                         order: str = None) -> set:
         queryset = self.queryset.values(field_name)
-        queryset = queryset.annotate(value=annotation)
+        queryset = queryset.annotate(**annotations)
         if order:
             queryset = queryset.order_by(
                 'value' if order == 'asc' else '-value')
-        top_groups: set = {group[field_name] for group in queryset[: limit]}
+        top_groups: set = {group[field_name] for group in queryset[:limit]}
 
         return top_groups
 

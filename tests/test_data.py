@@ -1,3 +1,4 @@
+import json
 from datetime import date, datetime, timedelta
 
 TEST_ANNOTATIONS = [
@@ -63,4 +64,15 @@ TEST_ANNOTATIONS = [
     ({"aggregation": "percentile", "aggregationField": "duration",
       "percentile": 0.5},
      {"value": timedelta(days=3, hours=12)}),
+
+    ({"aggregation": "percent",
+      "additionalFilter": json.dumps({
+          "type": "operator",
+          "data": {
+              "attribute": "group2",
+              "operator": "=",
+              "value": "1"
+          }
+      })},
+     {"numerator": 3, "denominator": 6, "value": 0.5}),
 ]

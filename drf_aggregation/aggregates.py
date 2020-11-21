@@ -1,11 +1,14 @@
-""" From Django Postgres Stats
-https://github.com/rtidatascience/django-postgres-stats
-"""
-from django.db.models import Aggregate
+from abc import ABC
+
+from django.db.models import Aggregate, Case, When
+from django.db.models.aggregates import Sum
+from django.db.models.fields import IntegerField
 
 
-class Percentile(Aggregate):
-    """
+class Percentile(Aggregate, ABC):
+    """From Django Postgres Stats
+    https://github.com/rtidatascience/django-postgres-stats
+
     Accepts a numerical field or expression and a list of fractions and
     returns values for each fraction given corresponding to that fraction in
     that expression.
@@ -57,3 +60,17 @@ class Percentile(Aggregate):
             extra['function'] = 'PERCENTILE_DISC'
 
         super().__init__(expression, percentiles=percentiles, **extra)
+
+
+class CountIf(Sum, ABC):
+    """
+    Counts all cases where condition is True
+    """
+    def __init__(self, condition):
+        super().__init__(
+            Case(
+                When(condition, then=1),
+                default=0,
+                output_field=IntegerField()
+            )
+        )
