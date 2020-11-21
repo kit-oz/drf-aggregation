@@ -17,9 +17,12 @@ class AggregationTests(APITestCase):
     def test_annotations(self, query, expected_response):
         response = self.client.get(self.URL, query, format="json")
         self.assertEqual(response.status_code, 200,
-                         msg=f"Failed on: {query}")
+                         msg=f"Failed on: {query}\n"
+                             f"response: {response.data}")
         self.assertEqual(response.data, expected_response,
-                         msg=f"Failed on: {query}")
+                         msg=f"Failed on: {query}\n"
+                             f"response: {response.data}\n"
+                             f"expected: {expected_response}")
 
     def test_group_by_field(self):
         query = {"aggregation": "count", "groupByFields": "group1"}
