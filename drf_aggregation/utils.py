@@ -1,5 +1,4 @@
 from django.db import models
-from .aggregates import CountIf
 
 
 class Aggregator:

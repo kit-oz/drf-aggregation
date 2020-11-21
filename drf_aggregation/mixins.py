@@ -17,6 +17,12 @@ class AggregationMixin:
                                            request=request)
         queryset = self.filter_queryset(self.get_queryset())
 
+        limit = self._get_limit(request=request)
+        limit_field = self._get_limit_by_field(request=request)
+        if limit and not limit_field:
+            raise ValidationError(
+                {"error": "limitByField is required if a limit is set."})
+
         aggregator = Aggregator(queryset=queryset)
         result = aggregator.get_database_aggregation(
             annotations=annotations,
