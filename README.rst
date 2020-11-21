@@ -67,24 +67,36 @@ Below is a list of possible aggregations and their additional required fields
 
 - count
 - sum
+
     - aggregationField
+
 - average
+
     - aggregationField
+
 - minimum
+
     - aggregationField
+
 - maximum
+
     - aggregationField
+
 - percentile - work only on PostgreSQL
+
     - aggregationField
     - percentile - from 0 to 1
     - outputType - currently only accepts "floats" for integer aggregation
+
 - percent
+
     - additionalFilter - filter parser is used from package "drf-complex-filter"
 
 The following additional options are available for all aggregation types
 
 - groupBy - used to group the result by one or more fields, mandatory if limit is set
 - limit - limits the output to the number of groups of records passed
+
     - limitByField - field for selecting the values that will remain, mandatory if limit is set
     - order - sorting direction of values: "asc" or "desc"
     - showOther - show groups not included in the top by one category or not
