@@ -1,6 +1,6 @@
 import json
-
 from django.db import models
+from django.db.models.functions import Trunc
 from drf_complex_filter.utils import generate_query_from_dict
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -16,6 +16,11 @@ class AggregationMixin:
         annotations = self._get_annotation(aggregation=aggregation,
                                            request=request)
         queryset = self.filter_queryset(self.get_queryset())
+
+        user_annotations = self._get_user_annotations(request=request)
+        if user_annotations.keys():
+            queryset = queryset.annotate(
+                **self._get_annotations(user_annotations))
 
         limit = self._get_limit(request=request)
         limit_field = self._get_limit_by_field(request=request)
@@ -148,3 +153,23 @@ class AggregationMixin:
     @staticmethod
     def _get_output_type(request) -> (str, None):
         return request.query_params.get("outputType", None)
+
+    @staticmethod
+    def _get_user_annotations(request) -> dict:
+        try:
+            user_annotations = json.loads(
+                request.query_params.get("annotations", None)
+            )
+        except (TypeError, json.decoder.JSONDecodeError):
+            user_annotations = {}
+
+        return user_annotations
+
+    @staticmethod
+    def _get_annotations(user_annotations) -> dict:
+        result = {}
+        for new_field in user_annotations:
+            annotation = user_annotations[new_field]
+            result[new_field] = Trunc(annotation["field"], annotation["kind"])
+
+        return result

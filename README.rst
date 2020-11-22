@@ -2,7 +2,23 @@
 Django Rest Framework Aggregation
 =================================
 
-DRF ViewSet for getting aggregations
+DRF Mixin for getting aggregations
+
+List of possible aggregations:
+
+- count
+- sum
+- average
+- minimum
+- maximum
+- percentile (work only on PostgreSQL)
+- percent
+
+Additional features
+
+- grouping by multiple fields
+- grouping by date fields with the required precision (from a second to a year)
+- display of top-N records, with the ability to show the rest of the records as a single group
 
 Installing
 ----------
@@ -53,48 +69,55 @@ Get aggregations
 
 ::
 
-    GET /user/aggregation?aggregation=count
-    GET /order/aggregation?aggregation=sum&aggregationField=price
-    GET /user/aggregation?aggregation=minimum&aggregationField=date_joined
-    GET /trip/aggregation?aggregation=maximum&aggregationField=duration
-    GET /position/aggregation?aggregation=percentile&aggregationField=salary&percentile=0.5
-    GET /ticket/aggregation?aggregation=percent&additionalFilter={"type":"operator","operator":{"attribute":"state","operator":"=","value":"open"}}
+    # Get the number of users
+    /user/aggregation?aggregation=count
 
-Possible aggregations
----------------------
+    # Total cost of orders
+    /order/aggregation?aggregation=sum&aggregationField=price
 
-Below is a list of possible aggregations and their additional required fields
+    # Earliest registration date
+    /user/aggregation?aggregation=minimum&aggregationField=date_joined
 
-- count
-- sum
+    # Last travel date
+    /trip/aggregation?aggregation=maximum&aggregationField=duration
 
-    - aggregationField
+    # Median salary
+    /position/aggregation?aggregation=percentile&aggregationField=salary&percentile=0.5
 
-- average
+    # Number of tickets by state
+    /ticket/aggregation?aggregation=count&groupByFields=state
 
-    - aggregationField
+    # Top 5 ticket executors
+    /ticket/aggregation?aggregation=count&groupByFields=assigned_to&limit=5&limitByField=assigned_to&order=desc
 
-- minimum
+    # Percentage of open tickets by service
+    /ticket/aggregation?aggregation=percent&groupByFields=service&additionalFilter={"type":"operator","operator":{"attribute":"state","operator":"=","value":"open"}}
 
-    - aggregationField
+    # Life expectancy depending on the year of birth
+    /person/aggregation?aggregation=average&aggregationField=age&annotations={"birth_year":{"field":"birth_date","kind":"year"}}&groupByFields=birth_year
 
-- maximum
+Query parameters
+----------------
 
-    - aggregationField
+- aggregation - aggregation type, one of:
 
-- percentile - work only on PostgreSQL
+    - count
+    - sum
+    - average
+    - minimum
+    - maximum
+    - percentile
+    - percent - return two additional values: "numerator" and "denominator"
 
-    - aggregationField
-    - percentile - from 0 to 1
-    - outputType - currently only accepts "floats" for integer aggregation
-
-- percent
-
-    - additionalFilter - filter parser is used from package "drf-complex-filter"
+- aggregationField - mandatory for aggregations: sum, average, minimum, maximum, percentile
+- percentile - from 0 to 1, mandatory for percentile
+- outputType - currently only accepts "floats" to properly aggregate integer fields, used for percentile only
+- additionalFilter - filter parser is used from package `drf-complex-filter`_, mandatory for percent
 
 The following additional options are available for all aggregation types
 
-- groupBy - used to group the result by one or more fields, mandatory if limit is set
+- groupBy - comma-separated list of fields, used to group the result by one or more fields, mandatory if limit is set
+- annotations - additional annotations for truncating date fields, using `Trunc`_ method from Django, format see examples above
 - limit - limits the output to the number of groups of records passed
 
     - limitByField - field for selecting the values that will remain, mandatory if limit is set
@@ -102,8 +125,13 @@ The following additional options are available for all aggregation types
     - showOther - show groups not included in the top by one category or not
     - otherGroupName - label for a group with records not included in the top
 
+.. _Trunc: https://docs.djangoproject.com/en/3.1/ref/models/database-functions/#trunc
+.. _drf-complex-filter: https://github.com/kit-oz/drf-complex-filter
+
 Supported field types
 ---------------------
+
+Aggregations are available on the following field types:
 
 - IntegerField
 - FloatField
