@@ -107,7 +107,7 @@ Query parameters
     - minimum
     - maximum
     - percentile
-    - percent - return two additional values: "numerator" and "denominator"
+    - percent (return two additional values: "numerator" and "denominator")
 
 - aggregationField - mandatory for aggregations: sum, average, minimum, maximum, percentile
 - percentile - from 0 to 1, mandatory for percentile
@@ -117,15 +117,16 @@ Query parameters
 The following additional options are available for all aggregation types
 
 - groupBy - comma-separated list of fields, used to group the result by one or more fields, mandatory if limit is set
-- annotations - additional annotations for truncating date fields, using `Trunc`_ method from Django, format see examples above
+- annotations - additional annotations for truncating date fields
 - limit - limits the output to the number of groups of records passed
 
-    - limitByField - field for selecting the values that will remain, mandatory if limit is set
-    - order - sorting direction of values: "asc" or "desc"
-    - showOther - show groups not included in the top by one category or not
-    - otherGroupName - label for a group with records not included in the top
+The following parameters are used only if there is a limit of displayed groups
 
-.. _Trunc: https://docs.djangoproject.com/en/3.1/ref/models/database-functions/#trunc
+- limitByField - field for selecting the values that will remain, mandatory if limit is set
+- order - sorting direction of values: "asc" or "desc"
+- showOther - if "1" is passed, all groups not included in the top will be displayed as one additional category
+- otherGroupName - label for additional category
+
 .. _drf-complex-filter: https://github.com/kit-oz/drf-complex-filter
 
 Supported field types
@@ -135,6 +136,31 @@ Aggregations are available on the following field types:
 
 - IntegerField
 - FloatField
-- DateField - only minimum and maximum
-- DateTimeField - only minimum and maximum
+- DateField (only minimum and maximum)
+- DateTimeField (only minimum and maximum)
 - DurationField
+
+Time series
+-----------
+
+To get time series, add the parameter
+
+::
+
+    ?annotations={"new_field_name":{"field":"existing_datetiem_field","kind":"one_of_the_available_truncations"}}
+
+Available truncations:
+
+- year
+- quarter
+- month
+- week
+- day
+- hour
+- minute
+- second
+
+
+For mo details about truncations read `Django Docs`_
+
+.. _Django Docs: https://docs.djangoproject.com/en/3.1/ref/models/database-functions/#trunc
