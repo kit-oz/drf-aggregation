@@ -116,7 +116,7 @@ Query parameters
 
 The following additional options are available for all aggregation types
 
-- groupBy - comma-separated list of fields, used to group the result by one or more fields, mandatory if limit is set
+- groupByFields - comma-separated list of fields, used to group the result by one or more fields, mandatory if limit is set
 - annotations - additional annotations for truncating date fields
 - limit - limits the output to the number of groups of records passed
 
@@ -147,7 +147,8 @@ To get time series, add the parameter
 
 ::
 
-    ?annotations={"new_field_name":{"field":"existing_datetiem_field","kind":"one_of_the_available_truncations"}}
+    ?annotations={"new_field_name":{"field":"existing_datetiem_field","kind":"one_of_the_available_truncations"}} \
+    &groupByFields=new_field_name
 
 Available truncations:
 
