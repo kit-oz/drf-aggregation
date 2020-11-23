@@ -68,10 +68,13 @@ class Aggregator:
         if additional_queryset.count() == 0:
             return list(aggregation)
 
+        additional_group_by = group_by.copy()
+        additional_group_by.remove(limit_field)
+
         aggregator = Aggregator(queryset=additional_queryset)
         additional_aggregation = aggregator.get_database_aggregation(
             annotations=annotations,
-            group_by=group_by[1:])
+            group_by=additional_group_by)
         aggregation = self._merge_aggregations(
             aggregation=aggregation,
             additional_aggregation=additional_aggregation,

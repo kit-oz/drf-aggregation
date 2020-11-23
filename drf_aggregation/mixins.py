@@ -22,18 +22,19 @@ class AggregationMixin:
             queryset = queryset.annotate(
                 **self._get_annotations(user_annotations))
 
+        group_by = self._get_group_by(request=request)
+
         limit = self._get_limit(request=request)
         limit_field = self._get_limit_by_field(request=request)
-        if limit and not limit_field:
-            raise ValidationError(
-                {"error": "limitByField is required if a limit is set."})
+        if limit and not limit_field and len(group_by) > 0:
+            limit_field = group_by[0]
 
         aggregator = Aggregator(queryset=queryset)
         result = aggregator.get_database_aggregation(
             annotations=annotations,
-            group_by=self._get_group_by(request=request),
-            limit=self._get_limit(request=request),
-            limit_field=self._get_limit_by_field(request=request),
+            group_by=group_by,
+            limit=limit,
+            limit_field=limit_field,
             order=self._get_order(request=request),
             show_other=self._get_show_other(request=request),
             other_group_name=self._get_other_group_name(request=request))
