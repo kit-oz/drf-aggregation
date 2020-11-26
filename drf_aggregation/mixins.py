@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .aggregates import CountIf
 from .aggregates import Percentile
 from .utils import Aggregator
+from .enums import Aggregation
 
 
 class AggregationMixin:
@@ -42,26 +43,26 @@ class AggregationMixin:
         return Response(result)
 
     def _get_annotation(self, aggregation: str, request) -> dict:
-        if aggregation == 'count':
+        if aggregation == Aggregation.COUNT:
             return {"value": models.Count('id')}
 
-        if aggregation == 'sum':
+        if aggregation == Aggregation.SUM:
             aggregation_field = self._get_aggregation_field(request=request)
             return {"value": models.Sum(aggregation_field)}
 
-        if aggregation == 'average':
+        if aggregation == Aggregation.AVERAGE:
             aggregation_field = self._get_aggregation_field(request=request)
             return {"value": models.Avg(aggregation_field)}
 
-        if aggregation == 'minimum':
+        if aggregation == Aggregation.MIN:
             aggregation_field = self._get_aggregation_field(request=request)
             return {"value": models.Min(aggregation_field)}
 
-        if aggregation == 'maximum':
+        if aggregation == Aggregation.MAX:
             aggregation_field = self._get_aggregation_field(request=request)
             return {"value": models.Max(aggregation_field)}
 
-        if aggregation == 'percentile':
+        if aggregation == Aggregation.PERCENTILE:
             aggregation_field = self._get_aggregation_field(request=request)
             percentile = self._get_percentile(request)
             output_type = self._get_output_type(request=request)
@@ -70,7 +71,7 @@ class AggregationMixin:
                                             output_field=models.FloatField())}
             return {"value": Percentile(aggregation_field, percentile)}
 
-        if aggregation == "percent":
+        if aggregation == Aggregation.PERCENT:
             additional_query = self._get_additional_query(request=request)
             return {
                 "numerator": CountIf(additional_query),
