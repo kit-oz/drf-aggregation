@@ -70,13 +70,13 @@ Get aggregations
     /position/aggregation?aggregation=percentile&aggregationField=salary&percentile=0.5
 
     # Top 5 ticket executors
-    /ticket/aggregation?aggregation=count&groupByFields=assigned_to&limit=5&order=desc
+    /ticket/aggregation?aggregation=count&groupBy=assigned_to&limit=5&order=desc
 
     # Percentage of open tickets by service
-    /ticket/aggregation?aggregation=percent&groupByFields=service&additionalFilter={"type":"operator","operator":{"attribute":"state","operator":"=","value":"open"}}
+    /ticket/aggregation?aggregation=percent&groupBy=service&additionalFilter={"type":"operator","operator":{"attribute":"state","operator":"=","value":"open"}}
 
     # Life expectancy depending on the year of birth
-    /person/aggregation?aggregation=average&aggregationField=age&annotations={"birth_year":{"field":"birth_date","kind":"year"}}&groupByFields=birth_year
+    /person/aggregation?aggregation=average&aggregationField=age&annotations={"birth_year":{"field":"birth_date","kind":"year"}}&groupBy=birth_year
 
 Supported field types
 ---------------------
@@ -125,7 +125,7 @@ To group the result, a comma-separated list of required fields is passed
 
 ::
 
-    ?aggregation=count&groupByFields=field1,field2
+    ?aggregation=count&groupBy=field1,field2
 
     [
         {"field1":"value1","field2":"value3","value":2},
@@ -144,7 +144,7 @@ If you have a large number of categories or you need to display only top-H, it i
 
 ::
 
-    ?aggregation=count&groupByFields=field1&limit=2&order=desc
+    ?aggregation=count&groupBy=field1&limit=2&order=desc
 
     [
         {"field1":"value1","value":10},
@@ -155,7 +155,7 @@ It is also possible to display all other groups as one additional category
 
 ::
 
-    ?aggregation=count&groupByFields=field1&limit=2&order=desc&showOther=1
+    ?aggregation=count&groupBy=field1&limit=2&order=desc&showOther=1
     
     [
         {"field1":"value1","value":10},
@@ -165,7 +165,7 @@ It is also possible to display all other groups as one additional category
 
 Additional options when there is a limit to the number of displayed groups:
 
-- limitByField - field for selecting the values that will remain, if not passed, the first field for grouping is used
+- limitBy - field for selecting the values that will remain, if not passed, the first field for grouping is used
 - order - sorting direction of values: "asc" or "desc"
 - showOther - if "1" is passed, all groups not included in the top will be displayed as one additional category
 - otherGroupName - label for additional category, default "Other"
@@ -178,7 +178,7 @@ To get time series, add the parameter
 ::
 
     ?annotations={"new_field_name":{"field":"existing_datetiem_field","kind":"one_of_the_available_truncations"}} \
-    &groupByFields=new_field_name
+    &groupBy=new_field_name
 
 Available truncations:
 

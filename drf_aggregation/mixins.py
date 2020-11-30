@@ -26,7 +26,7 @@ class AggregationMixin:
         group_by = self._get_group_by(request=request)
 
         limit = self._get_limit(request=request)
-        limit_field = self._get_limit_by_field(request=request)
+        limit_field = self._get_limit_by(request=request)
         if limit and not limit_field and len(group_by) > 0:
             limit_field = group_by[0]
 
@@ -93,7 +93,7 @@ class AggregationMixin:
 
     @staticmethod
     def _get_group_by(request) -> list:
-        group_by = request.query_params.get("groupByFields", None)
+        group_by = request.query_params.get("groupBy", None)
         group_by = group_by.split(",") if group_by else []
 
         return group_by
@@ -108,8 +108,8 @@ class AggregationMixin:
         return int(limit) if limit else None
 
     @staticmethod
-    def _get_limit_by_field(request) -> (str, None):
-        return request.query_params.get("limitByField", None)
+    def _get_limit_by(request) -> (str, None):
+        return request.query_params.get("limitBy", None)
 
     @staticmethod
     def _get_show_other(request) -> bool:
