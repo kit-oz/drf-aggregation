@@ -1,0 +1,2 @@
+djangorestframework==3.12.2
+drf-complex-filter==0.1.0
