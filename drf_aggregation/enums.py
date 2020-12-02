@@ -10,9 +10,3 @@ class Aggregation(models.TextChoices):
     PERCENT = "percent", _("percent")
     PERCENTILE = "percentile", _("percentile")
     SUM = "sum", _("sum")
-
-
-class Order(models.TextChoices):
-    NONE = "none", _("none")
-    ASC = "asc", _("ascending")
-    DESC = "desc", _("descending")
