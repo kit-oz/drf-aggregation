@@ -15,9 +15,10 @@ class Aggregator:
             self,
             annotations: dict,
             group_by: list = None,
+            sort_by: str = None,
+            order: str = None,
             limit: int = None,
             limit_field: str = None,
-            order: str = None,
             show_other: bool = False,
             other_group_name: str = None
     ) -> (dict, list):
@@ -25,9 +26,10 @@ class Aggregator:
 
         :param annotations: Django aggregation annotation
         :param group_by: list of fields to group the result
+        :param sort_by: field to sort
+        :param order: sort by value: "asc" or "desc"
         :param limit: number of groups to return
         :param limit_field: on which field the limit is set
-        :param order: sort by value to limit groups: "asc" or "desc"
         :param show_other: if a limit is set,
             combine other records into an additional group
         :param other_group_name: title of group "Other"
@@ -47,6 +49,9 @@ class Aggregator:
             aggregation = self.queryset.values(*group_by)
             aggregation = aggregation.annotate(**annotations)
             return list(aggregation)
+
+        if not limit_field:
+            limit_field = group_by[0]
 
         top_groups = self._get_top_groups(field_name=limit_field,
                                           annotations=annotations,

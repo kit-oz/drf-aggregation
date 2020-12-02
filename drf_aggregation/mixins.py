@@ -27,8 +27,6 @@ class AggregationMixin:
 
         limit = self._get_limit(request=request)
         limit_field = self._get_limit_by(request=request)
-        if limit and not limit_field and len(group_by) > 0:
-            limit_field = group_by[0]
 
         aggregator = Aggregator(queryset=queryset)
         result = aggregator.get_database_aggregation(
