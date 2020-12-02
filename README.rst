@@ -133,9 +133,56 @@ To group the result, a comma-separated list of required fields is passed
         {"field1":"value2","field2":"value4","value":3}
     ]
 
-.. attention::
+Sorting the result
+------------------
 
-    Results are not sorted, record order is not guaranteed
+When grouping by one field, it is enough to pass a list of fields by which you need to sort the result
+
+::
+
+    ?aggregation=count&groupBy=field1&orderBy=field1
+
+    [
+        {"field1":"value1","value":2},
+        {"field1":"value2","value":1},
+        {"field1":"value3","value":3}
+    ]
+
+To sort by aggregation result, use "value"
+
+::
+
+    ?aggregation=count&groupBy=field1&orderBy=-value
+
+    [
+        {"field1":"value3","value":3},
+        {"field1":"value1","value":2},
+        {"field1":"value2","value":1}
+    ]
+
+To sort when grouping by two or more fields,
+you must first add the ColumnIndexFilter filter backend to your ViewSet.
+
+.. code:: python
+
+    from drf_aggregation.filters import ColumnIndexFilter
+
+    class ModelViewSet(AggregationViewSet):
+        filter_backends = [ColumnIndexFilter]
+
+This filter groups the source queryset by the specified field and preserves the sorting of items.
+After that, you can use this index to sort the data grouped in the desired way.
+
+::
+
+    ?aggregation=count&groupBy=field1,field2&columnIndex=field1&orderBy=-field1__index,-value
+
+    [
+        {"field1":"value2","field2":"value4","value":3},
+        {"field1":"value2","field2":"value3","value":1},
+        {"field1":"value1","field2":"value3","value":2}
+    ]
+
 
 Limiting the number of displayed groups
 ---------------------------------------
@@ -144,36 +191,46 @@ If you have a large number of categories or you need to display only top-H, it i
 
 ::
 
-    ?aggregation=count&groupBy=field1&limit=2&order=desc
+    ?aggregation=count&groupBy=field1&orderBy=-value&limit=2
 
     [
         {"field1":"value1","value":10},
-        {"field1":"value2","value":9},
+        {"field1":"value2","value":9}
     ]
 
 It is also possible to display all other groups as one additional category
 
 ::
 
-    ?aggregation=count&groupBy=field1&limit=2&order=desc&showOther=1
+    ?aggregation=count&groupBy=field1orderBy=-value&&limit=2&showOther=1
     
     [
         {"field1":"value1","value":10},
         {"field1":"value2","value":9},
-        {"field1":"Other","value":45},
+        {"field1":"Other","value":45}
     ]
 
 Additional options when there is a limit to the number of displayed groups:
 
 - limitBy - field for selecting the values that will remain, if not passed, the first field for grouping is used
-- order - sorting direction of values: "asc" or "desc"
 - showOther - if "1" is passed, all groups not included in the top will be displayed as one additional category
 - otherGroupName - label for additional category, default "Other"
 
 Time series
 -----------
 
-To get time series, add the parameter
+To display timeseries, you must first add the ColumnIndexFilter filter backend to your ViewSet.
+
+.. code:: python
+
+    from drf_aggregation.filters import TruncateDateFilter
+
+    class ModelViewSet(AggregationViewSet):
+        filter_backends = [TruncateDateFilter]
+
+
+This filter will allow you to add date fields rounded to the required level,
+by which you can group and sort the result
 
 ::
 

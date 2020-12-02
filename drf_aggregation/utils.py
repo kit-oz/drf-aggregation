@@ -1,4 +1,5 @@
 from django.db import models
+from rest_framework.exceptions import ValidationError
 
 
 class Aggregator:
@@ -15,114 +16,120 @@ class Aggregator:
             self,
             annotations: dict,
             group_by: list = None,
-            sort_by: str = None,
-            order: str = None,
+            order_by: list = None,
             limit: int = None,
-            limit_field: str = None,
-            show_other: bool = False,
-            other_group_name: str = None
+            limit_by: str = None,
+            limit_show_other: bool = False,
+            limit_other_label: str = None
     ) -> (dict, list):
         """Get the aggregation result
 
         :param annotations: Django aggregation annotation
         :param group_by: list of fields to group the result
-        :param sort_by: field to sort
-        :param order: sort by value: "asc" or "desc"
+        :param order_by: list of fields to sort the result
         :param limit: number of groups to return
-        :param limit_field: on which field the limit is set
-        :param show_other: if a limit is set,
+        :param limit_by: on which field the limit is set
+            default is first field for grouping
+        :param limit_show_other: if a limit is set,
             combine other records into an additional group
-        :param other_group_name: title of group "Other"
+        :param limit_other_label: title of group "Other"
         :return: list of aggregation results for each set of groups
             in the presence of groupings
             without groupings - a dictionary of the form {value: result}
         """
         if not group_by:
-            aggregation = self.queryset.annotate(
-                _group=models.Value(1, output_field=models.IntegerField()))
-            aggregation = aggregation.values("_group")
-            aggregation = aggregation.annotate(**annotations)
-            aggregation = aggregation.values(*annotations.keys())
-            return dict(aggregation[0])
+            return self.get_simple_aggregation(annotations)
 
-        if not limit:
-            aggregation = self.queryset.values(*group_by)
-            aggregation = aggregation.annotate(**annotations)
-            return list(aggregation)
+        queryset = self.queryset.all()
+        top_groups_filter = None
+        if limit and limit > 0:
+            if not limit_by:
+                limit_by = group_by[0]
+            if len(order_by) == 0:
+                raise ValidationError(
+                    {"error": "If limit is set order_by is needed."}
+                )
 
-        if not limit_field:
-            limit_field = group_by[0]
+            top_groups_filter = self._get_top_groups_filter(
+                field_name=limit_by,
+                annotations=annotations,
+                order_by=order_by[0],
+                limit=limit)
+            queryset = queryset.filter(top_groups_filter)
 
-        top_groups = self._get_top_groups(field_name=limit_field,
-                                          annotations=annotations,
-                                          limit=limit,
-                                          order=order)
+        queryset = queryset.values(*group_by)
+        queryset = queryset.annotate(**annotations)
+        if order_by and len(order_by) > 0:
+            queryset = queryset.order_by(*order_by)
 
-        aggregation = self._get_queryset_with_groups(field_name=limit_field,
-                                                     values=top_groups)
-        aggregation = aggregation.values(*group_by)
-        aggregation = aggregation.annotate(**annotations)
+        if not limit_show_other:
+            return list(queryset)
 
-        if not show_other:
-            return list(aggregation)
-
-        additional_queryset = self._get_queryset_without_groups(
-            field_name=limit_field,
-            values=top_groups)
-
-        if additional_queryset.count() == 0:
-            return list(aggregation)
-
-        additional_group_by = group_by.copy()
-        additional_group_by.remove(limit_field)
-
-        aggregator = Aggregator(queryset=additional_queryset)
-        additional_aggregation = aggregator.get_database_aggregation(
+        aggregation_without_top = self.get_aggregation_without_top(
             annotations=annotations,
-            group_by=additional_group_by)
+            group_by=group_by,
+            order_by=order_by,
+            top_groups_filter=top_groups_filter,
+            limit_by=limit_by)
+        if not aggregation_without_top:
+            return list(queryset)
+
         aggregation = self._merge_aggregations(
-            aggregation=aggregation,
-            additional_aggregation=additional_aggregation,
-            field_name=limit_field,
-            other_group_name=other_group_name)
+            aggregation=list(queryset),
+            additional_aggregation=aggregation_without_top,
+            field_name=limit_by,
+            other_group_name=limit_other_label)
 
         return list(aggregation)
 
-    def _get_top_groups(self,
-                        field_name: str,
-                        annotations,
-                        limit: int,
-                        order: str = None) -> set:
+    def get_simple_aggregation(self, annotations) -> dict:
+        """Get aggregation without grouping
+
+        :param annotations: Django aggregation annotation
+        :return: Dict {value: result}
+        """
+        aggregation = self.queryset.annotate(
+            _group=models.Value(1, output_field=models.IntegerField()))
+        aggregation = aggregation.values("_group")
+        aggregation = aggregation.annotate(**annotations)
+        aggregation = aggregation.values(*annotations.keys())
+        return dict(aggregation[0])
+
+    def get_aggregation_without_top(
+            self,
+            annotations: dict,
+            group_by: list,
+            order_by: list,
+            top_groups_filter: models.Q,
+            limit_by: str = None,
+    ):
+        queryset = self.queryset.exclude(top_groups_filter)
+        if queryset.count() == 0:
+            return None
+
+        additional_group_by = group_by.copy()
+        if limit_by in additional_group_by:
+            additional_group_by.remove(limit_by)
+
+        aggregator = Aggregator(queryset=queryset)
+        aggregation = aggregator.get_database_aggregation(
+            annotations=annotations,
+            group_by=additional_group_by,
+            order_by=order_by)
+
+        return aggregation
+
+    def _get_top_groups_filter(self,
+                               field_name: str,
+                               annotations,
+                               order_by: str,
+                               limit: int) -> models.Q:
         queryset = self.queryset.values(field_name)
         queryset = queryset.annotate(**annotations)
-        if order:
-            queryset = queryset.order_by(
-                'value' if order == 'asc' else '-value')
-        top_groups: set = {group[field_name] for group in queryset[:limit]}
+        queryset = queryset.order_by(order_by)
+        top_groups = [group[field_name] for group in queryset[:limit]]
 
-        return top_groups
-
-    def _get_queryset_with_groups(self,
-                                  field_name: str,
-                                  values: set) -> models.QuerySet:
-        top_groups_filter = None
-        for value in values:
-            query = models.Q(**{"{}".format(field_name): value})
-            top_groups_filter = query | top_groups_filter \
-                if top_groups_filter else query
-
-        queryset = self.queryset.filter(top_groups_filter)
-        return queryset
-
-    def _get_queryset_without_groups(self,
-                                     field_name: str,
-                                     values: set) -> models.QuerySet:
-        queryset = self.queryset.all()
-        for value in values:
-            query = ~models.Q(**{"{}".format(field_name): value})
-            queryset = queryset.filter(query)
-
-        return queryset
+        return models.Q(**{"{}__in".format(field_name): top_groups})
 
     def _merge_aggregations(
             self,
