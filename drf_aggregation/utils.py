@@ -62,7 +62,7 @@ class Aggregator:
         if order_by and len(order_by) > 0:
             queryset = queryset.order_by(*order_by)
 
-        if not limit_show_other:
+        if not limit or not limit_show_other:
             return list(queryset)
 
         aggregation_without_top = self.get_aggregation_without_top(

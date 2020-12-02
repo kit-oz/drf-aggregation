@@ -89,6 +89,13 @@ UNSORTED_GROUPS_TESTING = [
       {"group1": "3", "group2": "1", "value": 1},
       {"group1": "1", "group2": "1", "value": 1},
       ]),
+
+    # IGNORE LIMIT BY AND SHOW OTHER WITHOUT LIMIT
+    ({"aggregation": "count", "groupBy": "group1",
+      "limitBy": "group1", "showOther": 1},
+     [{"group1": "1", "value": 2},
+      {"group1": "2", "value": 1},
+      {"group1": "3", "value": 3}]),
 ]
 
 SORTED_GROUPS_TESTING = [
