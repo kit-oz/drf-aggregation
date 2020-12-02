@@ -171,11 +171,10 @@ SORTED_GROUPS_TESTING = [
 
     # SORT BY DATE FIELD
     ({"aggregation": "count",
-      "annotations": json.dumps({"date_day": {"field": "date",
-                                              "kind": "day"}}),
-      "groupBy": "date_day", "orderBy": "date_day"},
-     [{"date_day": date(2020, 10, 1), "value": 2},
-      {"date_day": date(2020, 10, 31), "value": 1},
-      {"date_day": date(2020, 11, 1), "value": 2},
-      {"date_day": date(2020, 11, 2), "value": 1}]),
+      "truncateDate": "date=day",
+      "groupBy": "date__trunc__day", "orderBy": "date__trunc__day"},
+     [{"date__trunc__day": date(2020, 10, 1), "value": 2},
+      {"date__trunc__day": date(2020, 10, 31), "value": 1},
+      {"date__trunc__day": date(2020, 11, 1), "value": 2},
+      {"date__trunc__day": date(2020, 11, 2), "value": 1}]),
 ]

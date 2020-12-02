@@ -11,6 +11,11 @@ Key features:
 - time series
 - limiting the number of displayed records
 
+.. attention::
+
+    API not stabilized yet
+
+
 Installing
 ----------
 
@@ -234,8 +239,12 @@ by which you can group and sort the result
 
 ::
 
-    ?annotations={"new_field_name":{"field":"existing_datetiem_field","kind":"one_of_the_available_truncations"}} \
-    &groupBy=new_field_name
+    ?truncateDate=created_at=day&groupBy=created_at__trunc__day
+
+    [
+        {"created_at__trunc__day": date(2020, 10, 4), "value": 1},
+        {"created_at__trunc__day": date(2020, 11, 4), "value": 2},
+    ]
 
 Available truncations:
 
