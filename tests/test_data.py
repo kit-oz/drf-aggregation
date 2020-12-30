@@ -184,4 +184,14 @@ SORTED_GROUPS_TESTING = [
       {"date__trunc__day": date(2020, 10, 31), "value": 1},
       {"date__trunc__day": date(2020, 11, 1), "value": 2},
       {"date__trunc__day": date(2020, 11, 2), "value": 1}]),
+
+    # AGGREGATION ON EMPTY QUERY
+    ({"search": "4", "aggregation": "count", "groupBy": "group1"},
+     []),
+
+    # AGGREGATION ON EMPTY QUERY WITH SORT BY TOTAL GROUP VALUE
+    ({"search": "4", "columnIndex": "group1",
+      "aggregation": "count",
+      "groupBy": "group1,group2", "orderBy": "-group1__index,-group2"},
+     []),
 ]

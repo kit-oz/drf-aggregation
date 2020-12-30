@@ -57,6 +57,9 @@ class Aggregator:
                 limit=limit)
             queryset = queryset.filter(top_groups_filter)
 
+        if len(queryset) == 0:
+            return []
+
         queryset = queryset.values(*group_by)
         queryset = queryset.annotate(**annotations)
         if order_by and len(order_by) > 0:
