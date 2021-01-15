@@ -1,7 +1,6 @@
-import json
 from django.db import models
 from rest_framework.exceptions import ValidationError
-from drf_complex_filter.utils import generate_query_from_dict
+from drf_complex_filter.utils import ComplexFilter
 
 from .aggregates import CountIf
 from .aggregates import Percentile
@@ -67,16 +66,13 @@ def get_percentile(request) -> str:
 
 
 def get_additional_query(request) -> models.Q:
-    try:
-        additional_filter = json.loads(
-            request.query_params.get("additionalFilter", None)
-        )
-    except (TypeError, json.decoder.JSONDecodeError):
+    additional_filter = request.query_params.get("additionalFilter", None)
+    if not additional_filter:
         raise ValidationError({"error": "Additional filter is mandatory."})
-    additional_query = generate_query_from_dict(additional_filter)
+
+    complex_filter = ComplexFilter()
+    additional_query = complex_filter.generate_from_string(additional_filter)
     if not additional_query:
-        raise ValidationError(
-            {"error": "Additional filter cannot be empty."}
-        )
+        raise ValidationError({"error": "Additional filter cannot be empty."})
 
     return additional_query
