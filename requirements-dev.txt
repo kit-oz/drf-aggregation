@@ -1,4 +1,4 @@
 -r requirements.txt
-parameterized==0.7.4
-pbr==5.5.1
-psycopg2-binary==2.8.6
+parameterized~=0.7
+pbr~=5.5
+psycopg2-binary~=2.8
