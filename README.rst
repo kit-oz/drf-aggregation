@@ -224,7 +224,7 @@ Additional options when there is a limit to the number of displayed groups:
 Time series
 -----------
 
-To display timeseries, you must first add the ColumnIndexFilter filter backend to your ViewSet.
+To display timeseries, you must first add the TruncateDateFilter filter backend to your ViewSet.
 
 .. code:: python
 
