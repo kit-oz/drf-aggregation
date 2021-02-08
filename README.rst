@@ -78,7 +78,7 @@ Get aggregations
     /ticket/aggregation?aggregation=count&groupBy=assigned_to&limit=5&order=desc
 
     # Percentage of open tickets by service
-    /ticket/aggregation?aggregation=percent&groupBy=service&additionalFilter={"type":"operator","operator":{"attribute":"state","operator":"=","value":"open"}}
+    /ticket/aggregation?aggregation=percent&groupBy=service&additionalFilter={"type":"operator","data":{"attribute":"state","operator":"=","value":"open"}}
 
     # Life expectancy depending on the year of birth
     /person/aggregation?aggregation=average&aggregationField=age&annotations={"birth_year":{"field":"birth_date","kind":"year"}}&groupBy=birth_year
