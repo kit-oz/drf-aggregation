@@ -8,7 +8,7 @@ Key features:
 
 - can calculate percentile (work only on PostgreSQL) and percent
 - grouping by multiple fields
-- time series
+- time series (does not work on SQLite)
 - limiting the number of displayed records
 
 .. attention::
@@ -223,6 +223,8 @@ Additional options when there is a limit to the number of displayed groups:
 
 Time series
 -----------
+
+Warning! Doesn't work on SQLite because it doesn't have date / time fields.
 
 To display timeseries, you must first add the TruncateDateFilter filter backend to your ViewSet.
 
