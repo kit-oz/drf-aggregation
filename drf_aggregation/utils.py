@@ -1,3 +1,4 @@
+from typing import Union
 from django.db import models
 from rest_framework.exceptions import ValidationError
 
@@ -21,7 +22,7 @@ class Aggregator:
             limit_by: str = None,
             limit_show_other: bool = False,
             limit_other_label: str = None
-    ) -> (dict, list):
+    ) -> Union[dict, list]:
         """Get the aggregation result
 
         :param annotations: Django aggregation annotation
@@ -137,7 +138,7 @@ class Aggregator:
     def _merge_aggregations(
             self,
             aggregation: list,
-            additional_aggregation: (dict, list),
+            additional_aggregation: Union[dict, list],
             field_name: str,
             other_group_name: str = None
     ) -> list:
