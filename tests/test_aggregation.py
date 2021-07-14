@@ -1,4 +1,4 @@
-import json
+from django.db import connection
 from rest_framework.test import APITestCase
 from parameterized import parameterized
 from .models import TestCaseModel
@@ -18,6 +18,8 @@ class AggregationTests(APITestCase):
 
     @parameterized.expand(ANNOTATIONS_TESTING)
     def test_annotations(self, query, expected_response):
+        if connection.vendor != "postgresql" and query["aggregation"] == "percentile":
+            self.skipTest("Percentile only works with PostgreSQL")
         response = self.client.get(self.URL, query, format="json")
         self.assertEqual(response.status_code, 200,
                          msg=f"Failed on: {query}"
