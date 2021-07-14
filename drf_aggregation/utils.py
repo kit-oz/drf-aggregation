@@ -43,27 +43,25 @@ class Aggregator:
 
         queryset = self.queryset.all()
         top_groups_filter = None
-        if limit and limit > 0:
+        if limit:
             if not limit_by:
                 limit_by = group_by[0]
-            if len(order_by) == 0:
-                raise ValidationError(
-                    {"error": "If limit is set order_by is needed."}
-                )
+            if not order_by:
+                raise ValidationError({"error": "'order_by' is required when limit is set"})
 
             top_groups_filter = self._get_top_groups_filter(
                 field_name=limit_by,
                 annotations=annotations,
-                order_by=order_by[0],
+                order_by=order_by,
                 limit=limit)
             queryset = queryset.filter(top_groups_filter)
 
-        if len(queryset) == 0:
+        if not queryset.exists():
             return []
 
         queryset = queryset.values(*group_by)
         queryset = queryset.annotate(**annotations)
-        if order_by and len(order_by) > 0:
+        if order_by:
             queryset = queryset.order_by(*order_by)
 
         if not limit or not limit_show_other:
@@ -79,8 +77,8 @@ class Aggregator:
             return list(queryset)
 
         aggregation = self._merge_aggregations(
-            aggregation=list(queryset),
-            additional_aggregation=aggregation_without_top,
+            aggregation_1=list(queryset),
+            aggregation_2=aggregation_without_top,
             field_name=limit_by,
             other_group_name=limit_other_label)
 
@@ -126,31 +124,31 @@ class Aggregator:
     def _get_top_groups_filter(self,
                                field_name: str,
                                annotations,
-                               order_by: str,
+                               order_by: list,
                                limit: int) -> models.Q:
         queryset = self.queryset.values(field_name)
         queryset = queryset.annotate(**annotations)
-        queryset = queryset.order_by(order_by)
+        queryset = queryset.order_by(*order_by)
         top_groups = [group[field_name] for group in queryset[:limit]]
 
         return models.Q(**{"{}__in".format(field_name): top_groups})
 
     def _merge_aggregations(
             self,
-            aggregation: list,
-            additional_aggregation: Union[dict, list],
+            aggregation_1: list,
+            aggregation_2: Union[dict, list],
             field_name: str,
             other_group_name: str = None
     ) -> list:
         if not other_group_name:
             other_group_name = self.DEFAULT_OTHER_GROUP_NAME
 
-        merged_aggregation = list(aggregation)
-        if isinstance(additional_aggregation, dict):
-            additional_aggregation[field_name] = other_group_name
-            merged_aggregation.append(additional_aggregation)
-        elif isinstance(additional_aggregation, list):
-            for result in additional_aggregation:
+        merged_aggregation = list(aggregation_1)
+        if isinstance(aggregation_2, dict):
+            aggregation_2[field_name] = other_group_name
+            merged_aggregation.append(aggregation_2)
+        elif isinstance(aggregation_2, list):
+            for result in aggregation_2:
                 result[field_name] = other_group_name
                 merged_aggregation.append(result)
 
