@@ -1,5 +1,5 @@
 from django.db import models
-from rest_framework.exceptions import ValidationError
+from rest_framework import serializers
 from rest_framework.filters import BaseFilterBackend
 
 from ..helpers import get_annotations
@@ -13,9 +13,15 @@ class ColumnIndexFilter(BaseFilterBackend):
 
         aggregation = request.query_params.get("aggregation", None)
         if not aggregation:
-            raise ValidationError({"error": "Aggregation is mandatory."})
+            raise serializers.ValidationError({"error": "Aggregation is mandatory."})
 
-        annotations = get_annotations(aggregation=aggregation, request=request)
+        annotations = get_annotations(
+            aggregation=aggregation,
+            aggregation_field=request.query_params.get("aggregationField", None),
+            percentile=request.query_params.get("percentile", None),
+            output_type=request.query_params.get("outputType", None),
+            additional_filter=request.query_params.get("additionalFilter", None),
+        )
         indexes = {}
         for column in column_index.split(","):
             index_column = f'{column}__index'

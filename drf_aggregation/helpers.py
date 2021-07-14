@@ -5,39 +5,61 @@ from drf_complex_filter.utils import ComplexFilter
 from .aggregates import CountIf
 from .aggregates import Percentile
 from .enums import Aggregation
+from .utils import Aggregator
 
 
-def get_annotations(aggregation: str, request) -> dict:
+def get_aggregation(
+    queryset: models.QuerySet,
+    aggregation: str,
+    aggregation_field: str = None,
+    percentile: str = None,
+    output_type: str = None,
+    additional_filter: str = None,
+    group_by: list = None,
+    order_by: list = None,
+    limit: int = 0,
+    limit_by: str = None,
+    limit_show_other: bool = False,
+    limit_other_label: str = None,
+):
+    aggregator = Aggregator(queryset=queryset)
+    annotations = get_annotations(
+        aggregation=aggregation,
+        aggregation_field=aggregation_field,
+        percentile=percentile,
+        output_type=output_type,
+        additional_filter=additional_filter,
+    )
+    return aggregator.get_database_aggregation(
+        annotations=annotations,
+        group_by=group_by,
+        order_by=order_by,
+        limit=limit,
+        limit_by=limit_by,
+        limit_show_other=limit_show_other,
+        limit_other_label=limit_other_label,
+    )
+
+
+def get_annotations(
+    aggregation: str,
+    aggregation_field: str = None,
+    percentile: str = None,
+    output_type: str = None,
+    additional_filter: str = None,
+) -> dict:
     if aggregation == Aggregation.COUNT:
         return {"value": models.Count('id')}
 
-    if aggregation == Aggregation.SUM:
-        aggregation_field = get_aggregation_field(request)
-        return {"value": models.Sum(aggregation_field)}
-
-    if aggregation == Aggregation.AVERAGE:
-        aggregation_field = get_aggregation_field(request)
-        return {"value": models.Avg(aggregation_field)}
-
-    if aggregation == Aggregation.MIN:
-        aggregation_field = get_aggregation_field(request)
-        return {"value": models.Min(aggregation_field)}
-
-    if aggregation == Aggregation.MAX:
-        aggregation_field = get_aggregation_field(request)
-        return {"value": models.Max(aggregation_field)}
-
-    if aggregation == Aggregation.PERCENTILE:
-        aggregation_field = get_aggregation_field(request)
-        percentile = get_percentile(request)
-        output_type = request.query_params.get("outputType", None)
-        if output_type == 'float':
-            return {"value": Percentile(aggregation_field, percentile,
-                                        output_field=models.FloatField())}
-        return {"value": Percentile(aggregation_field, percentile)}
-
     if aggregation == Aggregation.PERCENT:
-        additional_query = get_additional_query(request=request)
+        if not additional_filter:
+            raise ValidationError({"error": "'additionalFilter' is required for 'aggregation=percent'"}, code=422)
+
+        complex_filter = ComplexFilter()
+        additional_query = complex_filter.generate_from_string(additional_filter)
+        if not additional_query:
+            raise ValidationError({"error": "Additional filter cannot be empty"}, code=422)
+
         return {
             "numerator": CountIf(additional_query),
             "denominator": models.Count("id"),
@@ -46,33 +68,28 @@ def get_annotations(aggregation: str, request) -> dict:
                 output_field=models.FloatField())
         }
 
-    raise ValidationError({"error": "Unknown aggregation."})
-
-
-def get_aggregation_field(request) -> str:
-    aggregation_field = request.query_params.get("aggregationField", None)
     if not aggregation_field:
-        raise ValidationError({"error": "Aggregation field is mandatory."})
+        raise ValidationError({"error": f"'aggregationField' is required for 'aggregation={aggregation}'"}, code=422)
 
-    return aggregation_field
+    if aggregation == Aggregation.SUM:
+        return {"value": models.Sum(aggregation_field)}
 
+    if aggregation == Aggregation.AVERAGE:
+        return {"value": models.Avg(aggregation_field)}
 
-def get_percentile(request) -> str:
-    percentile = request.query_params.get("percentile", None)
-    if not percentile:
-        raise ValidationError({"error": "Percentile is mandatory."})
+    if aggregation == Aggregation.MIN:
+        return {"value": models.Min(aggregation_field)}
 
-    return percentile
+    if aggregation == Aggregation.MAX:
+        return {"value": models.Max(aggregation_field)}
 
+    if aggregation == Aggregation.PERCENTILE:
+        if not percentile:
+            raise ValidationError({"error": "'percentile' is required for 'aggregation=percentile'"}, code=422)
 
-def get_additional_query(request) -> models.Q:
-    additional_filter = request.query_params.get("additionalFilter", None)
-    if not additional_filter:
-        raise ValidationError({"error": "Additional filter is mandatory."})
+        if output_type == 'float':
+            return {"value": Percentile(aggregation_field, percentile,
+                                        output_field=models.FloatField())}
+        return {"value": Percentile(aggregation_field, percentile)}
 
-    complex_filter = ComplexFilter()
-    additional_query = complex_filter.generate_from_string(additional_filter)
-    if not additional_query:
-        raise ValidationError({"error": "Additional filter cannot be empty."})
-
-    return additional_query
+    raise ValidationError({"error": "Unknown value for param 'aggregation'"}, code=422)

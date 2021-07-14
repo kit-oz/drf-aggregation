@@ -1,22 +1,22 @@
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
-from .utils import Aggregator
-from .helpers import get_annotations
+from .helpers import get_aggregation
 
 
 class AggregationMixin:
     def aggregation(self, request):
         aggregation = request.query_params.get("aggregation", None)
         if not aggregation:
-            raise ValidationError({"error": "Aggregation is mandatory."})
+            raise ValidationError({"error": "'aggregation' is required"})
 
-        queryset = self.filter_queryset(self.get_queryset())
-
-        aggregator = Aggregator(queryset=queryset)
-        result = aggregator.get_database_aggregation(
-            annotations=get_annotations(aggregation=aggregation,
-                                        request=request),
+        result = get_aggregation(
+            queryset=self.filter_queryset(self.get_queryset()),
+            aggregation=aggregation,
+            aggregation_field=request.query_params.get("aggregationField", None),
+            percentile=request.query_params.get("percentile", None),
+            output_type=request.query_params.get("outputType", None),
+            additional_filter=request.query_params.get("additionalFilter", None),
             group_by=self._get_group_by(request=request),
             order_by=self._get_order_by(request=request),
             limit=int(request.query_params.get("limit", 0)),
