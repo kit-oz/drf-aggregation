@@ -118,7 +118,6 @@ Additional parameters for different types of aggregations
 
 - aggregationField - mandatory for aggregations: sum, average, minimum, maximum, percentile
 - percentile - from 0 to 1, mandatory for percentile
-- outputType - currently only accepts "floats" to properly aggregate integer fields, used for percentile only
 - additionalFilter - filter parser is used from package `drf-complex-filter`_, mandatory for percent
 
 .. _drf-complex-filter: https://github.com/kit-oz/drf-complex-filter

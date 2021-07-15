@@ -13,7 +13,6 @@ def get_aggregation(
     aggregation: str,
     aggregation_field: str = None,
     percentile: str = None,
-    output_type: str = None,
     additional_filter: str = None,
     group_by: list = None,
     order_by: list = None,
@@ -27,8 +26,8 @@ def get_aggregation(
         aggregation=aggregation,
         aggregation_field=aggregation_field,
         percentile=percentile,
-        output_type=output_type,
         additional_filter=additional_filter,
+        queryset=queryset,
     )
     return aggregator.get_database_aggregation(
         annotations=annotations,
@@ -45,7 +44,7 @@ def get_annotations(
     aggregation: str,
     aggregation_field: str = None,
     percentile: str = None,
-    output_type: str = None,
+    queryset: models.QuerySet = None,
     additional_filter: str = None,
 ) -> dict:
     if aggregation == Aggregation.COUNT:
@@ -87,7 +86,12 @@ def get_annotations(
         if not percentile:
             raise ValidationError({"error": "'percentile' is required for 'aggregation=percentile'"}, code=422)
 
-        if output_type == 'float':
+        model: models.Model = queryset.model
+        field = None
+        for field_name in aggregation_field.split("__"):
+            field = getattr(field, field_name) if field else model._meta.get_field(field_name)
+
+        if field.get_internal_type() != "FloatField":
             return {"value": Percentile(aggregation_field, percentile,
                                         output_field=models.FloatField())}
         return {"value": Percentile(aggregation_field, percentile)}

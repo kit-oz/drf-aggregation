@@ -7,20 +7,24 @@ from ..helpers import get_annotations
 
 class ColumnIndexFilter(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        column_index = request.query_params.get("columnIndex", None)
+        params = request.query_params
+
+        column_index = params.get("columnIndex", None)
         if not column_index:
             return queryset
 
-        aggregation = request.query_params.get("aggregation", None)
+        aggregation = params.get("aggregation", None)
         if not aggregation:
             raise serializers.ValidationError({"error": "Aggregation is mandatory."})
 
+        aggregation_field = params["aggregationField"].replace(".", "__") if "aggregationField" in params else None
+
         annotations = get_annotations(
             aggregation=aggregation,
-            aggregation_field=request.query_params.get("aggregationField", None),
-            percentile=request.query_params.get("percentile", None),
-            output_type=request.query_params.get("outputType", None),
-            additional_filter=request.query_params.get("additionalFilter", None),
+            aggregation_field=aggregation_field,
+            percentile=params.get("percentile", None),
+            additional_filter=params.get("additionalFilter", None),
+            queryset=queryset,
         )
         indexes = {}
         for column in column_index.split(","):

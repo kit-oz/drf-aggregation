@@ -18,7 +18,7 @@ ANNOTATIONS_TESTING = [
      {"value": 5}),
 
     ({"aggregation": "percentile", "aggregationField": "integer",
-      "percentile": 0.5, "outputType": "float"},
+      "percentile": 0.5},
      {"value": 2.5}),
 
     ({"aggregation": "sum", "aggregationField": "float"},

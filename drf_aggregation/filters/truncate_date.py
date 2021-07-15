@@ -11,7 +11,7 @@ class TruncateDateFilter(BaseFilterBackend):
         annotations = {}
         for truncate_rule in truncate_date.split(","):
             (field, kind) = truncate_rule.split('=')
-            annotations[f'{field}__trunc__{kind}'] = Trunc(field, kind)
+            annotations[f'{field}__trunc__{kind}'] = Trunc(field.replace(".", "__"), kind)
 
         queryset = queryset.annotate(**annotations)
 
