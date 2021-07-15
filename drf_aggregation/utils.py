@@ -11,7 +11,7 @@ class Aggregator:
 
         :param queryset: Django Queryset for aggregation
         """
-        self.queryset = queryset
+        self.queryset = queryset.order_by()
 
     def get_database_aggregation(
             self,
@@ -90,11 +90,13 @@ class Aggregator:
         :param annotations: Django aggregation annotation
         :return: Dict {value: result}
         """
-        aggregation = self.queryset.annotate(
-            _group=models.Value(1, output_field=models.IntegerField()))
-        aggregation = aggregation.values("_group")
-        aggregation = aggregation.annotate(**annotations)
-        aggregation = aggregation.values(*annotations.keys())
+        aggregation = (
+            self.queryset
+            .annotate(_group=models.Value(1, output_field=models.IntegerField()))
+            .values("_group")
+            .annotate(**annotations)
+            .values(*annotations.keys())
+        )
         return dict(aggregation[0])
 
     def get_aggregation_without_top(
