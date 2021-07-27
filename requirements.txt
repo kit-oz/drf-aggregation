@@ -1,2 +1,2 @@
 djangorestframework~=3.12
-drf-complex-filter~=0.2
+drf-complex-filter~=1.0

@@ -54,8 +54,8 @@ def get_annotations(
         if not additional_filter:
             raise ValidationError({"error": "'additionalFilter' is required for 'aggregation=percent'"}, code=422)
 
-        complex_filter = ComplexFilter()
-        additional_query = complex_filter.generate_from_string(additional_filter)
+        complex_filter = ComplexFilter(model=queryset.model)
+        additional_query, _ = complex_filter.generate_from_string(additional_filter)
         if not additional_query:
             raise ValidationError({"error": "Additional filter cannot be empty"}, code=422)
 
