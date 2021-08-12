@@ -2,6 +2,11 @@
 Django Rest Framework Aggregation
 =================================
 
+
+.. image:: https://codecov.io/gh/kit-oz/drf-aggregation/branch/main/graph/badge.svg?token=X1RWDJI9NG
+   :target: https://codecov.io/gh/kit-oz/drf-aggregation
+
+
 DRF Mixin for getting aggregations
 
 Key features:
