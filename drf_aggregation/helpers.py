@@ -70,6 +70,9 @@ def get_annotations(
     if not aggregation_field:
         raise ValidationError({"error": f"'aggregationField' is required for 'aggregation={aggregation}'"}, code=422)
 
+    if aggregation == Aggregation.DISTINCT:
+        return {"value": models.Count(aggregation_field, distinct=True)}
+
     if aggregation == Aggregation.SUM:
         return {"value": models.Sum(aggregation_field)}
 
