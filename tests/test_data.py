@@ -143,6 +143,17 @@ SORTED_GROUPS_TESTING = [
       {'group1': '3', 'group2': '2', 'value': 1},
       {'group1': '3', 'group2': '1', 'value': 1}]),
 
+    # LIMIT WITH GROUP BY MULTIPLE FIELDS AND SHOW OTHER
+    ({"columnIndex": "group1",
+      "aggregation": "count",
+      "groupBy": "group1,group2", "orderBy": "-group1__index,-group2",
+      "limit": 1, "showOther": 1},
+     [{'group1': '3', 'group2': '3', 'value': 1},
+      {'group1': '3', 'group2': '2', 'value': 1},
+      {'group1': '3', 'group2': '1', 'value': 1},
+      {'group1': 'Other', 'group2': '2', 'value': 1},
+      {'group1': 'Other', 'group2': '1', 'value': 2}]),
+
     # LIMIT BY NOT FIRST FIELD IN GROUP BY
     ({"columnIndex": "group2",
       "aggregation": "count",

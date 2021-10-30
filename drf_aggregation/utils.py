@@ -115,11 +115,19 @@ class Aggregator:
         if limit_by in additional_group_by:
             additional_group_by.remove(limit_by)
 
+        additional_order_by = order_by.copy()
+        limit_index = f"{limit_by}__index"
+        if limit_index in additional_order_by:
+            additional_order_by.remove(limit_index)
+        limit_desc_index = f"-{limit_by}__index"
+        if limit_desc_index in additional_order_by:
+            additional_order_by.remove(limit_desc_index)
+
         aggregator = Aggregator(queryset=queryset)
         aggregation = aggregator.get_database_aggregation(
             annotations=annotations,
             group_by=additional_group_by,
-            order_by=order_by)
+            order_by=additional_order_by)
 
         return aggregation
 

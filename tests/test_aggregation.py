@@ -55,7 +55,12 @@ class AggregationTests(APITestCase):
                          msg=f"Failed on: {query}"
                              f"\nResponse: {response.data}"
                              f"\nExpected: {expected_response}")
-        self.assertListEqual(response.data, expected_response,
-                             msg=f"Failed on: {query}"
-                                 f"\nResponse: {response.data}"
-                                 f"\nExpected: {expected_response}")
+        for n in range(len(expected_response)):
+            self.assertDictEqual(
+                response.data[n],
+                expected_response[n],
+                msg=f"Failed on: {query}"
+                    f"Difference in elements at index: {n}"
+                    f"\nResponse element: {response.data[n]}"
+                    f"\nExpected element: {expected_response[n]}"
+            )
