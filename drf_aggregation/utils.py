@@ -97,7 +97,8 @@ class Aggregator:
             .annotate(**annotations)
             .values(*annotations.keys())
         )
-        return dict(aggregation[0])
+        if aggregation:
+            return dict(aggregation[0])
 
     def get_aggregation_without_top(
             self,
