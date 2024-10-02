@@ -1,5 +1,5 @@
 import json
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 ANNOTATIONS_TESTING = [
     ({"aggregation": "count"},
@@ -44,10 +44,10 @@ ANNOTATIONS_TESTING = [
      {"value": date(2020, 11, 2)}),
 
     ({"aggregation": "minimum", "aggregationField": "datetime"},
-     {"value": datetime(2020, 10, 1, 0, 1)}),
+     {"value": datetime(2020, 10, 1, 0, 1, tzinfo=timezone.utc)}),
 
     ({"aggregation": "maximum", "aggregationField": "datetime"},
-     {"value": datetime(2020, 11, 2, 0, 6)}),
+     {"value": datetime(2020, 11, 2, 0, 6, tzinfo=timezone.utc)}),
 
     ({"aggregation": "sum", "aggregationField": "duration"},
      {"value": timedelta(days=21)}),

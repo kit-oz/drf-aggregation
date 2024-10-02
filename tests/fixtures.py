@@ -1,4 +1,4 @@
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 RECORDS = [
     {"group1": "2",
@@ -6,7 +6,7 @@ RECORDS = [
      "integer": 0,
      "float": 0,
      "date": date(2020, 11, 2),
-     "datetime": datetime(2020, 10, 1, 0, 1),
+     "datetime": datetime(2020, 10, 1, 0, 1, tzinfo=timezone.utc),
      "duration": timedelta(days=1)},
 
     {"group1": "1",
@@ -14,7 +14,7 @@ RECORDS = [
      "integer": 1,
      "float": 1,
      "date": date(2020, 10, 1),
-     "datetime": datetime(2020, 11, 1, 0, 5),
+     "datetime": datetime(2020, 11, 1, 0, 5, tzinfo=timezone.utc),
      "duration": timedelta(days=2)},
 
     {"group1": "1",
@@ -22,7 +22,7 @@ RECORDS = [
      "integer": 2,
      "float": 2,
      "date": date(2020, 11, 1),
-     "datetime": datetime(2020, 10, 31, 0, 3),
+     "datetime": datetime(2020, 10, 31, 0, 3, tzinfo=timezone.utc),
      "duration": timedelta(days=3)},
 
     {"group1": "3",
@@ -30,7 +30,7 @@ RECORDS = [
      "integer": 3,
      "float": 3,
      "date": date(2020, 10, 31),
-     "datetime": datetime(2020, 11, 1, 0, 4),
+     "datetime": datetime(2020, 11, 1, 0, 4, tzinfo=timezone.utc),
      "duration": timedelta(days=4)},
 
     {"group1": "3",
@@ -38,7 +38,7 @@ RECORDS = [
      "integer": 4,
      "float": 4,
      "date": date(2020, 11, 1),
-     "datetime": datetime(2020, 10, 1, 0, 2),
+     "datetime": datetime(2020, 10, 1, 0, 2, tzinfo=timezone.utc),
      "duration": timedelta(days=5)},
 
     {"group1": "3",
@@ -46,6 +46,6 @@ RECORDS = [
      "integer": 5,
      "float": 5,
      "date": date(2020, 10, 1),
-     "datetime": datetime(2020, 11, 2, 0, 6),
+     "datetime": datetime(2020, 11, 2, 0, 6, tzinfo=timezone.utc),
      "duration": timedelta(days=6)},
 ]
