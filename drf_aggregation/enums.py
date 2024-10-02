@@ -2,7 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 
-class Aggregation(models.TextChoices):
+class AggregationType(models.TextChoices):
     AVERAGE = "average", _("average")
     COUNT = "count", _("count")
     DISTINCT = "distinct", _("distinct")

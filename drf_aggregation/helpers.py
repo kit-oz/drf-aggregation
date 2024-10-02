@@ -1,20 +1,28 @@
-from django.db import models
-from rest_framework.exceptions import ValidationError
-from drf_complex_filter.utils import ComplexFilter
+from typing import List, TypedDict
 
-from .aggregates import CountIf
-from .aggregates import Percentile
-from .enums import Aggregation
+from django.db import models
+from drf_complex_filter.utils import ComplexFilter
+from rest_framework.exceptions import ValidationError
+
+from .aggregates import CountIf, Percentile
+from .enums import AggregationType
 from .utils import Aggregator
 
+Aggregation = TypedDict(
+    "Aggregation",
+    {
+        "name": str,
+        "type": str,
+        "field": str,
+        "percentile": str,
+        "additional_filter": str,
+    },
+)
 
-def get_aggregation(
+
+def get_aggregations(
     queryset: models.QuerySet,
-    name: str,
-    aggregation: str,
-    aggregation_field: str = None,
-    percentile: str = None,
-    additional_filter: str = None,
+    aggregations: List[Aggregation],
     group_by: list = None,
     order_by: list = None,
     limit: int = 0,
@@ -23,14 +31,13 @@ def get_aggregation(
     limit_other_label: str = None,
 ):
     aggregator = Aggregator(queryset=queryset)
-    annotations = get_annotations(
-        name=name,
-        aggregation=aggregation,
-        aggregation_field=aggregation_field,
-        percentile=percentile,
-        additional_filter=additional_filter,
-        queryset=queryset,
-    )
+    annotations = {}
+    for aggregation in aggregations:
+        annotations = {
+            **annotations,
+            **get_annotations(queryset=queryset, aggregation=aggregation),
+        }
+
     return aggregator.get_database_aggregation(
         annotations=annotations,
         group_by=group_by,
@@ -43,63 +50,85 @@ def get_aggregation(
 
 
 def get_annotations(
-    aggregation: str,
-    name: str = "value",
-    aggregation_field: str = None,
-    percentile: str = None,
+    aggregation: Aggregation,
     queryset: models.QuerySet = None,
-    additional_filter: str = None,
 ) -> dict:
-    if aggregation == Aggregation.COUNT:
-        return {f"{name}": models.Count('id')}
+    type = aggregation.get("type")
+    name = aggregation.get("name")
+    if type == AggregationType.COUNT:
+        return {f"{name}": models.Count("id")}
 
-    if aggregation == Aggregation.PERCENT:
+    if type == AggregationType.PERCENT:
+        additional_filter = aggregation.get("additional_filter")
         if not additional_filter:
-            raise ValidationError({"error": "'additionalFilter' is required for 'aggregation=percent'"}, code=422)
+            raise ValidationError(
+                {
+                    "error": "'additionalFilter' is required for aggregation type 'percent'"
+                },
+                code=422,
+            )
 
         complex_filter = ComplexFilter(model=queryset.model)
         additional_query, _ = complex_filter.generate_from_string(additional_filter)
         if not additional_query:
-            raise ValidationError({"error": "Additional filter cannot be empty"}, code=422)
+            raise ValidationError(
+                {"error": "Additional filter cannot be empty"}, code=422
+            )
 
         return {
             f"{name}_numerator": CountIf(additional_query),
             f"{name}_denominator": models.Count("id"),
             f"{name}": models.ExpressionWrapper(
                 models.F(f"{name}_numerator") * 1.0 / models.F(f"{name}_denominator"),
-                output_field=models.FloatField())
+                output_field=models.FloatField(),
+            ),
         }
 
+    aggregation_field = aggregation.get("aggregation_field", None)
     if not aggregation_field:
-        raise ValidationError({"error": f"'aggregationField' is required for 'aggregation={aggregation}'"}, code=422)
+        raise ValidationError(
+            {"error": f"'aggregationField' is required for aggregation type '{type}'"},
+            code=422,
+        )
 
-    if aggregation == Aggregation.DISTINCT:
+    if type == AggregationType.DISTINCT:
         return {f"{name}": models.Count(aggregation_field, distinct=True)}
 
-    if aggregation == Aggregation.SUM:
+    if type == AggregationType.SUM:
         return {f"{name}": models.Sum(aggregation_field)}
 
-    if aggregation == Aggregation.AVERAGE:
+    if type == AggregationType.AVERAGE:
         return {f"{name}": models.Avg(aggregation_field)}
 
-    if aggregation == Aggregation.MIN:
+    if type == AggregationType.MIN:
         return {f"{name}": models.Min(aggregation_field)}
 
-    if aggregation == Aggregation.MAX:
+    if type == AggregationType.MAX:
         return {f"{name}": models.Max(aggregation_field)}
 
-    if aggregation == Aggregation.PERCENTILE:
+    if type == AggregationType.PERCENTILE:
+        percentile = aggregation.get("percentile")
         if not percentile:
-            raise ValidationError({"error": "'percentile' is required for 'aggregation=percentile'"}, code=422)
+            raise ValidationError(
+                {"error": "'percentile' is required for aggregation type 'percentile'"},
+                code=422,
+            )
 
         model: models.Model = queryset.model
         field = None
         for field_name in aggregation_field.split("__"):
-            field = getattr(field, field_name) if field else model._meta.get_field(field_name)
+            field = (
+                getattr(field, field_name)
+                if field
+                else model._meta.get_field(field_name)
+            )
 
         if field.get_internal_type() != "FloatField":
-            return {f"{name}": Percentile(aggregation_field, percentile,
-                                        output_field=models.FloatField())}
+            return {
+                f"{name}": Percentile(
+                    aggregation_field, percentile, output_field=models.FloatField()
+                )
+            }
         return {f"{name}": Percentile(aggregation_field, percentile)}
 
-    raise ValidationError({"error": "Unknown value for param 'aggregation'"}, code=422)
+    raise ValidationError({"error": f"Unknown aggregation type: {type}"}, code=422)
