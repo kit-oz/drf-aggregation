@@ -10,6 +10,7 @@ from .utils import Aggregator
 
 def get_aggregation(
     queryset: models.QuerySet,
+    name: str,
     aggregation: str,
     aggregation_field: str = None,
     percentile: str = None,
@@ -23,6 +24,7 @@ def get_aggregation(
 ):
     aggregator = Aggregator(queryset=queryset)
     annotations = get_annotations(
+        name=name,
         aggregation=aggregation,
         aggregation_field=aggregation_field,
         percentile=percentile,
@@ -42,13 +44,14 @@ def get_aggregation(
 
 def get_annotations(
     aggregation: str,
+    name: str = "value",
     aggregation_field: str = None,
     percentile: str = None,
     queryset: models.QuerySet = None,
     additional_filter: str = None,
 ) -> dict:
     if aggregation == Aggregation.COUNT:
-        return {"value": models.Count('id')}
+        return {f"{name}": models.Count('id')}
 
     if aggregation == Aggregation.PERCENT:
         if not additional_filter:
@@ -60,10 +63,10 @@ def get_annotations(
             raise ValidationError({"error": "Additional filter cannot be empty"}, code=422)
 
         return {
-            "numerator": CountIf(additional_query),
-            "denominator": models.Count("id"),
-            "value": models.ExpressionWrapper(
-                models.F("numerator") * 1.0 / models.F("denominator"),
+            f"{name}_numerator": CountIf(additional_query),
+            f"{name}_denominator": models.Count("id"),
+            f"{name}": models.ExpressionWrapper(
+                models.F(f"{name}_numerator") * 1.0 / models.F(f"{name}_denominator"),
                 output_field=models.FloatField())
         }
 
@@ -71,19 +74,19 @@ def get_annotations(
         raise ValidationError({"error": f"'aggregationField' is required for 'aggregation={aggregation}'"}, code=422)
 
     if aggregation == Aggregation.DISTINCT:
-        return {"value": models.Count(aggregation_field, distinct=True)}
+        return {f"{name}": models.Count(aggregation_field, distinct=True)}
 
     if aggregation == Aggregation.SUM:
-        return {"value": models.Sum(aggregation_field)}
+        return {f"{name}": models.Sum(aggregation_field)}
 
     if aggregation == Aggregation.AVERAGE:
-        return {"value": models.Avg(aggregation_field)}
+        return {f"{name}": models.Avg(aggregation_field)}
 
     if aggregation == Aggregation.MIN:
-        return {"value": models.Min(aggregation_field)}
+        return {f"{name}": models.Min(aggregation_field)}
 
     if aggregation == Aggregation.MAX:
-        return {"value": models.Max(aggregation_field)}
+        return {f"{name}": models.Max(aggregation_field)}
 
     if aggregation == Aggregation.PERCENTILE:
         if not percentile:
@@ -95,8 +98,8 @@ def get_annotations(
             field = getattr(field, field_name) if field else model._meta.get_field(field_name)
 
         if field.get_internal_type() != "FloatField":
-            return {"value": Percentile(aggregation_field, percentile,
+            return {f"{name}": Percentile(aggregation_field, percentile,
                                         output_field=models.FloatField())}
-        return {"value": Percentile(aggregation_field, percentile)}
+        return {f"{name}": Percentile(aggregation_field, percentile)}
 
     raise ValidationError({"error": "Unknown value for param 'aggregation'"}, code=422)

@@ -17,6 +17,7 @@ class AggregationMixin:
 
         result = get_aggregation(
             queryset=self.filter_queryset(self.get_queryset()),
+            name=params.get("name", "value"),
             aggregation=aggregation,
             aggregation_field=aggregation_field,
             percentile=params.get("percentile", None),

@@ -70,7 +70,7 @@ ANNOTATIONS_TESTING = [
                                       "data": {"attribute": "group2",
                                                "operator": "=",
                                                "value": "1"}})},
-     {"numerator": 3, "denominator": 6, "value": 0.5}),
+     {"value_numerator": 3, "value_denominator": 6, "value": 0.5}),
 ]
 
 UNSORTED_GROUPS_TESTING = [
@@ -183,9 +183,9 @@ SORTED_GROUPS_TESTING = [
                                                "operator": "=",
                                                "value": "2"}}),
       "groupBy": "group1", "orderBy": "-value"},
-     [{"group1": "1", "numerator": 1, "denominator": 2, "value": 0.5},
-      {"group1": "3", "numerator": 1, "denominator": 3, "value": 1 / 3},
-      {"group1": "2", "numerator": 0, "denominator": 1, "value": 0}]),
+     [{"group1": "1", "value_numerator": 1, "value_denominator": 2, "value": 0.5},
+      {"group1": "3", "value_numerator": 1, "value_denominator": 3, "value": 1 / 3},
+      {"group1": "2", "value_numerator": 0, "value_denominator": 1, "value": 0}]),
 
     # SORT BY DATE FIELD
     ({"aggregation": "count",
