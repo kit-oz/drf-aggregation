@@ -406,7 +406,7 @@ SORTED_GROUPS_TESTING = [
                     "type": "count",
                 }
             },
-            "truncateDate": "date=day",
+            "truncate_rules": {"date": "day"},
             "group_by": "date__trunc__day",
             "order_by": "date__trunc__day",
         },
