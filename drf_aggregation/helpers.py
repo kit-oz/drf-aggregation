@@ -23,13 +23,29 @@ Aggregation = TypedDict(
 def get_aggregations(
     queryset: models.QuerySet,
     aggregations: List[Aggregation],
-    group_by: list = None,
-    order_by: list = None,
+    group_by: List[str] | str = None,
+    order_by: List[str] | str = None,
     limit: int = 0,
     limit_by: str = None,
     limit_show_other: bool = False,
     limit_other_label: str = None,
 ):
+    if group_by:
+        group_by = [
+            field.replace(".", "__")
+            for field in (
+                group_by.split(",") if isinstance(group_by, str) else group_by
+            )
+        ]
+
+    if order_by:
+        order_by = [
+            field.replace(".", "__")
+            for field in (
+                order_by.split(",") if isinstance(order_by, str) else order_by
+            )
+        ]
+
     aggregator = Aggregator(queryset=queryset)
     annotations = {}
     for aggregation in aggregations:
@@ -43,7 +59,7 @@ def get_aggregations(
         group_by=group_by,
         order_by=order_by,
         limit=limit,
-        limit_by=limit_by,
+        limit_by=limit_by.replace(".", "__") if limit_by else None,
         limit_show_other=limit_show_other,
         limit_other_label=limit_other_label,
     )

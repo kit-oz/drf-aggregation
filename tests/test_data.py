@@ -76,7 +76,7 @@ ANNOTATIONS_TESTING = [
 UNSORTED_GROUPS_TESTING = [
     # GROUP BY ONE FIELD
     (
-        {"aggregation": "count", "groupBy": "group1"},
+        {"aggregation": "count", "group_by": "group1"},
         [
             {"group1": "1", "value": 2},
             {"group1": "2", "value": 1},
@@ -85,7 +85,7 @@ UNSORTED_GROUPS_TESTING = [
     ),
     # GROUP BY MULTIPLE FIELDS
     (
-        {"aggregation": "count", "groupBy": "group1,group2"},
+        {"aggregation": "count", "group_by": "group1,group2"},
         [
             {"group1": "3", "group2": "3", "value": 1},
             {"group1": "3", "group2": "2", "value": 1},
@@ -99,8 +99,8 @@ UNSORTED_GROUPS_TESTING = [
     (
         {
             "aggregation": "count",
-            "groupBy": "group1",
-            "limitBy": "group1",
+            "group_by": "group1",
+            "limit_by": "group1",
             "showOther": True,
         },
         [
@@ -114,7 +114,7 @@ UNSORTED_GROUPS_TESTING = [
 SORTED_GROUPS_TESTING = [
     # DESCENDING SORTING BY VALUE
     (
-        {"aggregation": "count", "groupBy": "group1", "orderBy": "-value"},
+        {"aggregation": "count", "group_by": "group1", "order_by": "-value"},
         [
             {"group1": "3", "value": 3},
             {"group1": "1", "value": 2},
@@ -123,7 +123,7 @@ SORTED_GROUPS_TESTING = [
     ),
     # ASCENDING SORTING BY VALUE
     (
-        {"aggregation": "count", "groupBy": "group1", "orderBy": "value"},
+        {"aggregation": "count", "group_by": "group1", "order_by": "value"},
         [
             {"group1": "2", "value": 1},
             {"group1": "1", "value": 2},
@@ -132,7 +132,7 @@ SORTED_GROUPS_TESTING = [
     ),
     # SORT BY GROUP NAME
     (
-        {"aggregation": "count", "groupBy": "group1", "orderBy": "group1"},
+        {"aggregation": "count", "group_by": "group1", "order_by": "group1"},
         [
             {"group1": "1", "value": 2},
             {"group1": "2", "value": 1},
@@ -144,8 +144,8 @@ SORTED_GROUPS_TESTING = [
         {
             "columnIndex": "group1",
             "aggregation": "count",
-            "groupBy": "group1,group2",
-            "orderBy": "-group1__index,-group2",
+            "group_by": "group1,group2",
+            "order_by": "-group1__index,-group2",
         },
         [
             {"group1": "3", "group2": "3", "value": 1},
@@ -158,7 +158,12 @@ SORTED_GROUPS_TESTING = [
     ),
     # LIMIT NUMBER OF RETURNED GROUPS
     (
-        {"aggregation": "count", "groupBy": "group1", "orderBy": "-value", "limit": 1},
+        {
+            "aggregation": "count",
+            "group_by": "group1",
+            "order_by": "-value",
+            "limit": 1,
+        },
         [{"group1": "3", "value": 3}],
     ),
     # LIMIT WITH GROUP BY MULTIPLE FIELDS
@@ -166,8 +171,8 @@ SORTED_GROUPS_TESTING = [
         {
             "columnIndex": "group1",
             "aggregation": "count",
-            "groupBy": "group1,group2",
-            "orderBy": "-group1__index,-group2",
+            "group_by": "group1,group2",
+            "order_by": "-group1__index,-group2",
             "limit": 1,
         },
         [
@@ -181,8 +186,8 @@ SORTED_GROUPS_TESTING = [
         {
             "columnIndex": "group1",
             "aggregation": "count",
-            "groupBy": "group1,group2",
-            "orderBy": "-group1__index,-group2",
+            "group_by": "group1,group2",
+            "order_by": "-group1__index,-group2",
             "limit": 1,
             "showOther": True,
         },
@@ -199,10 +204,10 @@ SORTED_GROUPS_TESTING = [
         {
             "columnIndex": "group2",
             "aggregation": "count",
-            "groupBy": "group1,group2",
-            "orderBy": "group2__index",
+            "group_by": "group1,group2",
+            "order_by": "group2__index",
             "limit": 1,
-            "limitBy": "group2",
+            "limit_by": "group2",
         },
         [{"group1": "3", "group2": "3", "value": 1}],
     ),
@@ -210,8 +215,8 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "aggregation": "count",
-            "groupBy": "group1",
-            "orderBy": "-value",
+            "group_by": "group1",
+            "order_by": "-value",
             "limit": 1,
             "showOther": True,
         },
@@ -221,8 +226,8 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "aggregation": "count",
-            "groupBy": "group1",
-            "orderBy": "-value",
+            "group_by": "group1",
+            "order_by": "-value",
             "limit": 3,
             "showOther": True,
         },
@@ -242,8 +247,8 @@ SORTED_GROUPS_TESTING = [
                     "data": {"attribute": "group2", "operator": "=", "value": "2"},
                 }
             ),
-            "groupBy": "group1",
-            "orderBy": "-value",
+            "group_by": "group1",
+            "order_by": "-value",
         },
         [
             {"group1": "1", "value_numerator": 1, "value_denominator": 2, "value": 0.5},
@@ -261,8 +266,8 @@ SORTED_GROUPS_TESTING = [
         {
             "aggregation": "count",
             "truncateDate": "date=day",
-            "groupBy": "date__trunc__day",
-            "orderBy": "date__trunc__day",
+            "group_by": "date__trunc__day",
+            "order_by": "date__trunc__day",
         },
         [
             {"date__trunc__day": date(2020, 10, 1), "value": 2},
@@ -273,7 +278,7 @@ SORTED_GROUPS_TESTING = [
     ),
     # AGGREGATION ON EMPTY QUERY
     (
-        {"aggregation": "count", "groupBy": "group1"},
+        {"aggregation": "count", "group_by": "group1"},
         [],
         {"search": "4"},
     ),
@@ -282,8 +287,8 @@ SORTED_GROUPS_TESTING = [
         {
             "columnIndex": "group1",
             "aggregation": "count",
-            "groupBy": "group1,group2",
-            "orderBy": "-group1__index,-group2",
+            "group_by": "group1,group2",
+            "order_by": "-group1__index,-group2",
         },
         [],
         {"search": "4"},

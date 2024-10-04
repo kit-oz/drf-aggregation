@@ -26,31 +26,15 @@ class AggregationMixin:
         if not aggregations[0]["type"]:
             raise ValidationError({"error": "'aggregation' is required"})
 
-        limit_by = params["limitBy"].replace(".", "__") if "limitBy" in params else None
-
         result = get_aggregations(
             queryset=self.filter_queryset(self.get_queryset()),
             aggregations=aggregations,
-            group_by=self._get_group_by(params),
-            order_by=self._get_order_by(params),
+            group_by=params.get("group_by", None),
+            order_by=params.get("order_by", None),
             limit=int(params.get("limit", 0)),
-            limit_by=limit_by,
+            limit_by=params.get("limit_by", None),
             limit_show_other=params.get("showOther", False),
             limit_other_label=params.get("otherGroupName", None),
         )
 
         return Response(result)
-
-    @staticmethod
-    def _get_group_by(params) -> list:
-        group_by = params.get("groupBy", None)
-        group_by = group_by.split(",") if group_by else []
-
-        return [field.replace(".", "__") for field in group_by]
-
-    @staticmethod
-    def _get_order_by(params) -> list:
-        order_by = params.get("orderBy", None)
-        order_by = order_by.split(",") if order_by else []
-
-        return [field.replace(".", "__") for field in order_by]
