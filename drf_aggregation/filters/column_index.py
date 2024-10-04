@@ -13,20 +13,8 @@ class ColumnIndexFilter(BaseFilterBackend):
         if not column_index:
             return queryset
 
-        aggregation: Aggregation = {
-            "name": params.get("name", "value"),
-            "type": params.get("aggregation", None),
-            "percentile": params.get("percentile", None),
-            "additional_filter": params.get("additionalFilter", None),
-            "aggregation_field": (
-                params["aggregationField"].replace(".", "__")
-                if "aggregationField" in params
-                else None
-            ),
-        }
-
-        if not aggregation["type"]:
-            raise serializers.ValidationError({"error": "Aggregation is mandatory."})
+        aggregations = params.get("aggregations", None)
+        aggregation = {"name": "value", **aggregations["value"]}
 
         annotations = get_annotations(
             aggregation=aggregation,

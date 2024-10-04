@@ -21,7 +21,10 @@ class AggregationTests(APITestCase):
 
     @parameterized.expand(ANNOTATIONS_TESTING)
     def test_annotations(self, query, expected_response):
-        if connection.vendor != "postgresql" and query["aggregation"] == "percentile":
+        if (
+            connection.vendor != "postgresql"
+            and query["aggregations"]["value"]["type"] == "percentile"
+        ):
             self.skipTest("Percentile only works with PostgreSQL")
         response = self.client.post(self.URL, query, format="json")
         self.assertEqual(

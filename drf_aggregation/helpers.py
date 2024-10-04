@@ -1,4 +1,4 @@
-from typing import List, TypedDict
+from typing import Dict, List, TypedDict
 
 from django.db import models
 from drf_complex_filter.utils import ComplexFilter
@@ -22,7 +22,7 @@ Aggregation = TypedDict(
 
 def get_aggregations(
     queryset: models.QuerySet,
-    aggregations: List[Aggregation],
+    aggregations: Dict[str, Aggregation],
     group_by: List[str] | str = None,
     order_by: List[str] | str = None,
     limit: int = 0,
@@ -48,7 +48,16 @@ def get_aggregations(
 
     aggregator = Aggregator(queryset=queryset)
     annotations = {}
-    for aggregation in aggregations:
+    for name, aggregation in aggregations.copy().items():
+        aggregation["name"] = name
+        aggregation["field"] = (
+            aggregation["field"].replace(".", "__")
+            if "field" in aggregation and aggregation["field"]
+            else None
+        )
+        if not aggregation["type"]:
+            raise ValidationError({"error": "'aggregation' is required"})
+
         annotations = {
             **annotations,
             **get_annotations(queryset=queryset, aggregation=aggregation),
@@ -85,7 +94,12 @@ def get_annotations(
             )
 
         complex_filter = ComplexFilter(model=queryset.model)
-        additional_query, _ = complex_filter.generate_from_string(additional_filter)
+        if isinstance(additional_filter, str):
+            additional_query, _ = complex_filter.generate_from_string(additional_filter)
+        else:
+            additional_query, _ = complex_filter.generate_query_from_dict(
+                additional_filter
+            )
         if not additional_query:
             raise ValidationError(
                 {"error": "Additional filter cannot be empty"}, code=422
@@ -100,27 +114,27 @@ def get_annotations(
             ),
         }
 
-    aggregation_field = aggregation.get("aggregation_field", None)
-    if not aggregation_field:
+    field = aggregation.get("field", None)
+    if not field:
         raise ValidationError(
             {"error": f"'aggregationField' is required for aggregation type '{type}'"},
             code=422,
         )
 
     if type == AggregationType.DISTINCT:
-        return {f"{name}": models.Count(aggregation_field, distinct=True)}
+        return {f"{name}": models.Count(field, distinct=True)}
 
     if type == AggregationType.SUM:
-        return {f"{name}": models.Sum(aggregation_field)}
+        return {f"{name}": models.Sum(field)}
 
     if type == AggregationType.AVERAGE:
-        return {f"{name}": models.Avg(aggregation_field)}
+        return {f"{name}": models.Avg(field)}
 
     if type == AggregationType.MIN:
-        return {f"{name}": models.Min(aggregation_field)}
+        return {f"{name}": models.Min(field)}
 
     if type == AggregationType.MAX:
-        return {f"{name}": models.Max(aggregation_field)}
+        return {f"{name}": models.Max(field)}
 
     if type == AggregationType.PERCENTILE:
         percentile = aggregation.get("percentile")
@@ -131,20 +145,20 @@ def get_annotations(
             )
 
         model: models.Model = queryset.model
-        field = None
-        for field_name in aggregation_field.split("__"):
-            field = (
-                getattr(field, field_name)
-                if field
+        modelField = None
+        for field_name in field.split("__"):
+            modelField = (
+                getattr(modelField, field_name)
+                if modelField
                 else model._meta.get_field(field_name)
             )
 
-        if field.get_internal_type() != "FloatField":
+        if modelField.get_internal_type() != "FloatField":
             return {
                 f"{name}": Percentile(
-                    aggregation_field, percentile, output_field=models.FloatField()
+                    field, percentile, output_field=models.FloatField()
                 )
             }
-        return {f"{name}": Percentile(aggregation_field, percentile)}
+        return {f"{name}": Percentile(field, percentile)}
 
     raise ValidationError({"error": f"Unknown aggregation type: {type}"}, code=422)

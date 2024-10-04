@@ -1,73 +1,130 @@
-import json
 from datetime import date, datetime, timedelta, timezone
 
 ANNOTATIONS_TESTING = [
-    ({"aggregation": "count"}, {"value": 6}),
-    ({"aggregation": "sum", "aggregationField": "integer"}, {"value": 15}),
-    ({"aggregation": "average", "aggregationField": "integer"}, {"value": 2.5}),
-    ({"aggregation": "minimum", "aggregationField": "integer"}, {"value": 0}),
-    ({"aggregation": "maximum", "aggregationField": "integer"}, {"value": 5}),
+    ({"aggregations": {"value": {"type": "count"}}}, {"value": 6}),
     (
-        {"aggregation": "percentile", "aggregationField": "integer", "percentile": 0.5},
-        {"value": 2.5},
-    ),
-    ({"aggregation": "sum", "aggregationField": "float"}, {"value": 15}),
-    ({"aggregation": "average", "aggregationField": "float"}, {"value": 2.5}),
-    ({"aggregation": "minimum", "aggregationField": "float"}, {"value": 0}),
-    ({"aggregation": "maximum", "aggregationField": "float"}, {"value": 5}),
-    (
-        {"aggregation": "percentile", "aggregationField": "float", "percentile": 0.5},
-        {"value": 2.5},
+        {
+            "aggregations": {
+                "value": {"type": "sum", "field": "integer"},
+            }
+        },
+        {"value": 15},
     ),
     (
-        {"aggregation": "minimum", "aggregationField": "date"},
+        {
+            "aggregations": {
+                "value": {"type": "average", "field": "integer"},
+            }
+        },
+        {"value": 2.5},
+    ),
+    (
+        {"aggregations": {"value": {"type": "minimum", "field": "integer"}}},
+        {"value": 0},
+    ),
+    (
+        {"aggregations": {"value": {"type": "maximum", "field": "integer"}}},
+        {"value": 5},
+    ),
+    (
+        {
+            "aggregations": {
+                "value": {
+                    "type": "percentile",
+                    "field": "integer",
+                    "percentile": 0.5,
+                }
+            }
+        },
+        {"value": 2.5},
+    ),
+    (
+        {"aggregations": {"value": {"type": "sum", "field": "float"}}},
+        {"value": 15},
+    ),
+    (
+        {"aggregations": {"value": {"type": "average", "field": "float"}}},
+        {"value": 2.5},
+    ),
+    (
+        {"aggregations": {"value": {"type": "minimum", "field": "float"}}},
+        {"value": 0},
+    ),
+    (
+        {"aggregations": {"value": {"type": "maximum", "field": "float"}}},
+        {"value": 5},
+    ),
+    (
+        {
+            "aggregations": {
+                "value": {
+                    "type": "percentile",
+                    "field": "float",
+                    "percentile": 0.5,
+                }
+            }
+        },
+        {"value": 2.5},
+    ),
+    (
+        {"aggregations": {"value": {"type": "minimum", "field": "date"}}},
         {"value": date(2020, 10, 1)},
     ),
     (
-        {"aggregation": "maximum", "aggregationField": "date"},
+        {"aggregations": {"value": {"type": "maximum", "field": "date"}}},
         {"value": date(2020, 11, 2)},
     ),
     (
-        {"aggregation": "minimum", "aggregationField": "datetime"},
+        {"aggregations": {"value": {"type": "minimum", "field": "datetime"}}},
         {"value": datetime(2020, 10, 1, 0, 1, tzinfo=timezone.utc)},
     ),
     (
-        {"aggregation": "maximum", "aggregationField": "datetime"},
+        {"aggregations": {"value": {"type": "maximum", "field": "datetime"}}},
         {"value": datetime(2020, 11, 2, 0, 6, tzinfo=timezone.utc)},
     ),
     (
-        {"aggregation": "sum", "aggregationField": "duration"},
+        {"aggregations": {"value": {"type": "sum", "field": "duration"}}},
         {"value": timedelta(days=21)},
     ),
     (
-        {"aggregation": "average", "aggregationField": "duration"},
+        {"aggregations": {"value": {"type": "average", "field": "duration"}}},
         {"value": timedelta(days=3, hours=12)},
     ),
     (
-        {"aggregation": "minimum", "aggregationField": "duration"},
+        {"aggregations": {"value": {"type": "minimum", "field": "duration"}}},
         {"value": timedelta(days=1)},
     ),
     (
-        {"aggregation": "maximum", "aggregationField": "duration"},
+        {"aggregations": {"value": {"type": "maximum", "field": "duration"}}},
         {"value": timedelta(days=6)},
     ),
     (
         {
-            "aggregation": "percentile",
-            "aggregationField": "duration",
-            "percentile": 0.5,
+            "aggregations": {
+                "value": {
+                    "type": "percentile",
+                    "field": "duration",
+                    "percentile": 0.5,
+                }
+            }
         },
         {"value": timedelta(days=3, hours=12)},
     ),
     (
         {
-            "aggregation": "percent",
-            "additionalFilter": json.dumps(
-                {
-                    "type": "operator",
-                    "data": {"attribute": "group2", "operator": "=", "value": "1"},
+            "aggregations": {
+                "value": {
+                    "type": "percent",
+                    "additional_filter": {
+                        "type": "operator",
+                        "data": {
+                            "attribute": "group2",
+                            "operator": "=",
+                            "value": "1",
+                        },
+                    },
                 }
-            ),
+            }
         },
         {"value_numerator": 3, "value_denominator": 6, "value": 0.5},
     ),
@@ -76,7 +133,14 @@ ANNOTATIONS_TESTING = [
 UNSORTED_GROUPS_TESTING = [
     # GROUP BY ONE FIELD
     (
-        {"aggregation": "count", "group_by": "group1"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+        },
         [
             {"group1": "1", "value": 2},
             {"group1": "2", "value": 1},
@@ -85,7 +149,14 @@ UNSORTED_GROUPS_TESTING = [
     ),
     # GROUP BY MULTIPLE FIELDS
     (
-        {"aggregation": "count", "group_by": "group1,group2"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1,group2",
+        },
         [
             {"group1": "3", "group2": "3", "value": 1},
             {"group1": "3", "group2": "2", "value": 1},
@@ -98,7 +169,11 @@ UNSORTED_GROUPS_TESTING = [
     # IGNORE LIMIT BY AND SHOW OTHER WITHOUT LIMIT
     (
         {
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1",
             "limit_by": "group1",
             "showOther": True,
@@ -114,7 +189,15 @@ UNSORTED_GROUPS_TESTING = [
 SORTED_GROUPS_TESTING = [
     # DESCENDING SORTING BY VALUE
     (
-        {"aggregation": "count", "group_by": "group1", "order_by": "-value"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+            "order_by": "-value",
+        },
         [
             {"group1": "3", "value": 3},
             {"group1": "1", "value": 2},
@@ -123,7 +206,15 @@ SORTED_GROUPS_TESTING = [
     ),
     # ASCENDING SORTING BY VALUE
     (
-        {"aggregation": "count", "group_by": "group1", "order_by": "value"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+            "order_by": "value",
+        },
         [
             {"group1": "2", "value": 1},
             {"group1": "1", "value": 2},
@@ -132,7 +223,15 @@ SORTED_GROUPS_TESTING = [
     ),
     # SORT BY GROUP NAME
     (
-        {"aggregation": "count", "group_by": "group1", "order_by": "group1"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+            "order_by": "group1",
+        },
         [
             {"group1": "1", "value": 2},
             {"group1": "2", "value": 1},
@@ -143,7 +242,11 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "columnIndex": "group1",
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1,group2",
             "order_by": "-group1__index,-group2",
         },
@@ -159,7 +262,11 @@ SORTED_GROUPS_TESTING = [
     # LIMIT NUMBER OF RETURNED GROUPS
     (
         {
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1",
             "order_by": "-value",
             "limit": 1,
@@ -170,7 +277,11 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "columnIndex": "group1",
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1,group2",
             "order_by": "-group1__index,-group2",
             "limit": 1,
@@ -185,7 +296,11 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "columnIndex": "group1",
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1,group2",
             "order_by": "-group1__index,-group2",
             "limit": 1,
@@ -203,7 +318,11 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "columnIndex": "group2",
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1,group2",
             "order_by": "group2__index",
             "limit": 1,
@@ -214,7 +333,11 @@ SORTED_GROUPS_TESTING = [
     # LIMIT NUMBER OF RETURNED GROUPS, WITH GROUP "OTHER"
     (
         {
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1",
             "order_by": "-value",
             "limit": 1,
@@ -225,7 +348,11 @@ SORTED_GROUPS_TESTING = [
     # NOT SHOW EMPTY GROUP "OTHER"
     (
         {
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                },
+            },
             "group_by": "group1",
             "order_by": "-value",
             "limit": 3,
@@ -240,13 +367,19 @@ SORTED_GROUPS_TESTING = [
     # GROUP BY PERCENT AGGREGATION
     (
         {
-            "aggregation": "percent",
-            "additionalFilter": json.dumps(
-                {
-                    "type": "operator",
-                    "data": {"attribute": "group2", "operator": "=", "value": "2"},
+            "aggregations": {
+                "value": {
+                    "type": "percent",
+                    "additional_filter": {
+                        "type": "operator",
+                        "data": {
+                            "attribute": "group2",
+                            "operator": "=",
+                            "value": "2",
+                        },
+                    },
                 }
-            ),
+            },
             "group_by": "group1",
             "order_by": "-value",
         },
@@ -264,7 +397,11 @@ SORTED_GROUPS_TESTING = [
     # SORT BY DATE FIELD
     (
         {
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "truncateDate": "date=day",
             "group_by": "date__trunc__day",
             "order_by": "date__trunc__day",
@@ -278,7 +415,14 @@ SORTED_GROUPS_TESTING = [
     ),
     # AGGREGATION ON EMPTY QUERY
     (
-        {"aggregation": "count", "group_by": "group1"},
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+        },
         [],
         {"search": "4"},
     ),
@@ -286,7 +430,11 @@ SORTED_GROUPS_TESTING = [
     (
         {
             "columnIndex": "group1",
-            "aggregation": "count",
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
             "group_by": "group1,group2",
             "order_by": "-group1__index,-group2",
         },
