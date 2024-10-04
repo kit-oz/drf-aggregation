@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from .aggregates import CountIf, Percentile
 from .enums import AggregationType
+from .filters import add_column_indexes
 from .utils import Aggregator
 
 Aggregation = TypedDict(
@@ -13,9 +14,10 @@ Aggregation = TypedDict(
     {
         "name": str,
         "type": str,
-        "field": str,
-        "percentile": str,
-        "additional_filter": str,
+        "field": str | None,
+        "percentile": str | None,
+        "additional_filter": str | None,
+        "index_by_group": str | None,
     },
 )
 
@@ -26,7 +28,8 @@ def get_aggregations(
     group_by: List[str] | str = None,
     order_by: List[str] | str = None,
     limit: int = 0,
-    limit_by: str = None,
+    limit_by_group: str = None,
+    limit_by_aggregation: str = None,
     limit_show_other: bool = False,
     limit_other_label: str = None,
 ):
@@ -46,8 +49,8 @@ def get_aggregations(
             )
         ]
 
-    aggregator = Aggregator(queryset=queryset)
     annotations = {}
+    group_indexes = {}
     for name, aggregation in aggregations.copy().items():
         aggregation["name"] = name
         aggregation["field"] = (
@@ -63,12 +66,27 @@ def get_aggregations(
             **get_annotations(queryset=queryset, aggregation=aggregation),
         }
 
+        index_by_group = aggregation.get("index_by_group", None)
+        if index_by_group:
+            index_by_group = index_by_group.replace(".", "__")
+            group_indexes[index_by_group] = aggregation["name"]
+
+    if group_indexes:
+        queryset = add_column_indexes(
+            queryset, annotations=annotations, group_indexes=group_indexes
+        )
+
+    aggregator = Aggregator(queryset=queryset)
+
     return aggregator.get_database_aggregation(
         annotations=annotations,
         group_by=group_by,
         order_by=order_by,
         limit=limit,
-        limit_by=limit_by.replace(".", "__") if limit_by else None,
+        limit_by_group=limit_by_group.replace(".", "__") if limit_by_group else None,
+        limit_by_aggregation=(
+            limit_by_aggregation.replace(".", "__") if limit_by_aggregation else None
+        ),
         limit_show_other=limit_show_other,
         limit_other_label=limit_other_label,
     )

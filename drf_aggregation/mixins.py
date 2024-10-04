@@ -13,9 +13,10 @@ class AggregationMixin:
             group_by=params.get("group_by", None),
             order_by=params.get("order_by", None),
             limit=int(params.get("limit", 0)),
-            limit_by=params.get("limit_by", None),
-            limit_show_other=params.get("showOther", False),
-            limit_other_label=params.get("otherGroupName", None),
+            limit_by_group=params.get("limit_by_group", None),
+            limit_by_aggregation=params.get("limit_by_aggregation", None),
+            limit_show_other=params.get("show_other", False),
+            limit_other_label=params.get("other_group_name", None),
         )
 
         return Response(result)
