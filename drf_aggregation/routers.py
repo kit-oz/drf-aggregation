@@ -1,5 +1,4 @@
-from rest_framework.routers import Route
-from rest_framework.routers import SimpleRouter
+from rest_framework.routers import Route, SimpleRouter
 
 
 class AggregationRouter(SimpleRouter):
@@ -10,7 +9,7 @@ class AggregationRouter(SimpleRouter):
     routes = [
         Route(
             url="{prefix}/aggregation",
-            mapping={"get": "aggregation"},
+            mapping={"post": "aggregation"},
             name="{basename}-aggregation",
             detail=False,
             initkwargs={},

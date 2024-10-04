@@ -7,7 +7,7 @@ from ..helpers import Aggregation, get_annotations
 
 class ColumnIndexFilter(BaseFilterBackend):
     def filter_queryset(self, request, queryset, view):
-        params = request.query_params
+        params = request.data
 
         column_index = params.get("columnIndex", None)
         if not column_index:

@@ -8,7 +8,7 @@ from .helpers import Aggregation, get_aggregations
 
 class AggregationMixin:
     def aggregation(self, request):
-        params = request.query_params
+        params = request.data
 
         aggregations: List[Aggregation] = [
             {
@@ -31,26 +31,26 @@ class AggregationMixin:
         result = get_aggregations(
             queryset=self.filter_queryset(self.get_queryset()),
             aggregations=aggregations,
-            group_by=self._get_group_by(request),
-            order_by=self._get_order_by(request),
+            group_by=self._get_group_by(params),
+            order_by=self._get_order_by(params),
             limit=int(params.get("limit", 0)),
             limit_by=limit_by,
-            limit_show_other=params.get("showOther", None) == "1",
+            limit_show_other=params.get("showOther", False),
             limit_other_label=params.get("otherGroupName", None),
         )
 
         return Response(result)
 
     @staticmethod
-    def _get_group_by(request) -> list:
-        group_by = request.query_params.get("groupBy", None)
+    def _get_group_by(params) -> list:
+        group_by = params.get("groupBy", None)
         group_by = group_by.split(",") if group_by else []
 
         return [field.replace(".", "__") for field in group_by]
 
     @staticmethod
-    def _get_order_by(request) -> list:
-        order_by = request.query_params.get("orderBy", None)
+    def _get_order_by(params) -> list:
+        order_by = params.get("orderBy", None)
         order_by = order_by.split(",") if order_by else []
 
         return [field.replace(".", "__") for field in order_by]
