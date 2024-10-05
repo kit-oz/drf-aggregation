@@ -1,8 +1,45 @@
 from abc import ABC
 
-from django.db.models import Aggregate, Case, When
-from django.db.models.aggregates import Sum
-from django.db.models.fields import IntegerField
+from django.core.exceptions import ValidationError
+from django.db import models
+from django.db.models import Aggregate
+
+from ..types import Aggregation
+
+
+class PercentileAggregation:
+    @staticmethod
+    def percentile(aggregation: Aggregation, queryset: models.QuerySet):
+        error = {}
+        name = aggregation.get("name")
+
+        field = aggregation.get("field", None)
+        if not field:
+            error["field"] = "required for aggregation type 'percent'"
+
+        percentile = aggregation.get("percentile", None)
+        if not percentile:
+            error["percentile"] = "required for aggregation type 'percent'"
+
+        if error:
+            raise ValidationError(error, code=422)
+
+        model: models.Model = queryset.model
+        model_field = None
+        for field_name in field.split("__"):
+            model_field = (
+                getattr(model_field, field_name)
+                if model_field
+                else model._meta.get_field(field_name)
+            )
+
+        if model_field.get_internal_type() != "FloatField":
+            return {
+                f"{name}": Percentile(
+                    field, percentile, output_field=models.FloatField()
+                )
+            }
+        return {f"{name}": Percentile(field, percentile)}
 
 
 class Percentile(Aggregate, ABC):
@@ -48,29 +85,16 @@ class Percentile(Aggregate, ABC):
 
     function = None
     name = "percentile"
-    template = "%(function)s(%(percentiles)s) WITHIN GROUP (ORDER BY %(" \
-               "expressions)s)"
+    template = (
+        "%(function)s(%(percentiles)s) WITHIN GROUP (ORDER BY %(" "expressions)s)"
+    )
 
     def __init__(self, expression, percentiles, continuous=True, **extra):
         if isinstance(percentiles, (list, tuple)):
-            percentiles = "array%(percentiles)s" % {'percentiles': percentiles}
+            percentiles = "array%(percentiles)s" % {"percentiles": percentiles}
         if continuous:
-            extra['function'] = 'PERCENTILE_CONT'
+            extra["function"] = "PERCENTILE_CONT"
         else:
-            extra['function'] = 'PERCENTILE_DISC'
+            extra["function"] = "PERCENTILE_DISC"
 
         super().__init__(expression, percentiles=percentiles, **extra)
-
-
-class CountIf(Sum, ABC):
-    """
-    Counts all cases where condition is True
-    """
-    def __init__(self, condition):
-        super().__init__(
-            Case(
-                When(condition, then=1),
-                default=0,
-                output_field=IntegerField()
-            )
-        )
