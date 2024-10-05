@@ -1,2 +1,1 @@
-djangorestframework~=3.12
-drf-complex-filter~=1.0
+django>=3.0.0

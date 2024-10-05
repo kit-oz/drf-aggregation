@@ -1,8 +1,7 @@
 from rest_framework.filters import SearchFilter
 
-from drf_aggregation.viewsets import AggregationViewSet
-
 from .models import TestCaseModel
+from .viewsets import AggregationViewSet
 
 
 class TestCaseViewSet(AggregationViewSet):

@@ -1,4 +1,4 @@
-from rest_framework.response import Response
+from django.http import JsonResponse
 
 from .filters import truncate_date
 from .helpers import get_aggregations
@@ -26,4 +26,4 @@ class AggregationMixin:
             limit_other_label=params.get("other_group_name", None),
         )
 
-        return Response(result)
+        return JsonResponse(result, safe=False)

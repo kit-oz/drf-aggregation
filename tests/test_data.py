@@ -1,5 +1,3 @@
-from datetime import date, datetime, timedelta, timezone
-
 ANNOTATIONS_TESTING = [
     ({"aggregations": {"value": {"type": "count"}}}, {"value": 6}),
     (
@@ -68,35 +66,35 @@ ANNOTATIONS_TESTING = [
     ),
     (
         {"aggregations": {"value": {"type": "minimum", "field": "date"}}},
-        {"value": date(2020, 10, 1)},
+        {"value": "2020-10-01"},
     ),
     (
         {"aggregations": {"value": {"type": "maximum", "field": "date"}}},
-        {"value": date(2020, 11, 2)},
+        {"value": "2020-11-02"},
     ),
     (
         {"aggregations": {"value": {"type": "minimum", "field": "datetime"}}},
-        {"value": datetime(2020, 10, 1, 0, 1, tzinfo=timezone.utc)},
+        {"value": "2020-10-01T00:01:00Z"},
     ),
     (
         {"aggregations": {"value": {"type": "maximum", "field": "datetime"}}},
-        {"value": datetime(2020, 11, 2, 0, 6, tzinfo=timezone.utc)},
+        {"value": "2020-11-02T00:06:00Z"},
     ),
     (
         {"aggregations": {"value": {"type": "sum", "field": "duration"}}},
-        {"value": timedelta(days=21)},
+        {"value": "P21DT00H00M00S"},
     ),
     (
         {"aggregations": {"value": {"type": "average", "field": "duration"}}},
-        {"value": timedelta(days=3, hours=12)},
+        {"value": "P3DT12H00M00S"},
     ),
     (
         {"aggregations": {"value": {"type": "minimum", "field": "duration"}}},
-        {"value": timedelta(days=1)},
+        {"value": "P1DT00H00M00S"},
     ),
     (
         {"aggregations": {"value": {"type": "maximum", "field": "duration"}}},
-        {"value": timedelta(days=6)},
+        {"value": "P6DT00H00M00S"},
     ),
     (
         {
@@ -108,7 +106,7 @@ ANNOTATIONS_TESTING = [
                 }
             }
         },
-        {"value": timedelta(days=3, hours=12)},
+        {"value": "P3DT12H00M00S"},
     ),
     (
         {
@@ -485,10 +483,10 @@ SORTED_GROUPS_TESTING = [
             "order_by": "date__trunc__day",
         },
         [
-            {"date__trunc__day": date(2020, 10, 1), "value": 2},
-            {"date__trunc__day": date(2020, 10, 31), "value": 1},
-            {"date__trunc__day": date(2020, 11, 1), "value": 2},
-            {"date__trunc__day": date(2020, 11, 2), "value": 1},
+            {"date__trunc__day": "2020-10-01", "value": 2},
+            {"date__trunc__day": "2020-10-31", "value": 1},
+            {"date__trunc__day": "2020-11-01", "value": 2},
+            {"date__trunc__day": "2020-11-02", "value": 1},
         ],
     ),
     # AGGREGATION ON EMPTY QUERY

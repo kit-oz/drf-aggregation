@@ -1,3 +1,6 @@
+import json
+from urllib import parse
+
 from django.db import connection
 from parameterized import parameterized
 from rest_framework.test import APITestCase
@@ -28,66 +31,72 @@ class AggregationTests(APITestCase):
             if "percentile" in types:
                 self.skipTest("Percentile only works with PostgreSQL")
         response = self.client.post(self.URL, query, format="json")
+        data = json.loads(response.content)
         self.assertEqual(
             response.status_code,
             200,
-            msg=f"Failed on: {query}" f"\nResponse: {response.data}",
+            msg=f"Failed on: {query}" f"\nResponse: {data}",
         )
         self.assertEqual(
-            response.data,
+            data,
             expected_response,
             msg=f"Failed on: {query}"
-            f"\nResponse: {response.data}"
+            f"\nResponse: {data}"
             f"\nExpected: {expected_response}",
         )
 
     @parameterized.expand(UNSORTED_GROUPS_TESTING)
     def test_group_by(self, query, expected_response):
         response = self.client.post(self.URL, query, format="json")
+        data = json.loads(response.content)
         self.assertEqual(
             response.status_code,
             200,
-            msg=f"Failed on: {query}" f"\nResponse: {response.data}",
+            msg=f"Failed on: {query}" f"\nResponse: {data}",
         )
         self.assertEqual(
-            len(response.data),
+            len(data),
             len(expected_response),
             msg=f"Failed on: {query}"
-            f"\nResponse: {response.data}"
+            f"\nResponse: {data}"
             f"\nExpected: {expected_response}",
         )
-        for result in response.data:
+        for result in data:
             self.assertIn(
                 result,
                 expected_response,
                 msg=f"Failed on: {query}"
-                f"\nResponse: {response.data}"
+                f"\nResponse: {data}"
                 f"\nExpected: {expected_response}",
             )
 
     @parameterized.expand(SORTED_GROUPS_TESTING)
     def test_group_by_fields(self, query, expected_response, query_params=None):
         response = self.client.post(
-            self.URL, query, format="json", query_params=query_params
+            self.URL,
+            query,
+            format="json",
+            QUERY_STRING=parse.urlencode(query_params) if query_params else None,
         )
+        data = json.loads(response.content)
         self.assertEqual(
             response.status_code,
             200,
-            msg=f"Failed on: {query}" f"\nResponse: {response.data}",
+            msg=f"Failed on: {query}" f"\nResponse: {data}",
         )
         self.assertEqual(
-            len(response.data),
+            len(data),
             len(expected_response),
             msg=f"Failed on: {query}"
-            f"\nResponse: {response.data}"
+            f"\nResponse: {data}"
             f"\nExpected: {expected_response}",
         )
         for n in range(len(expected_response)):
             self.assertDictEqual(
-                response.data[n],
+                data[n],
                 expected_response[n],
                 msg=f"Failed on: {query}"
                 f"Difference in elements at index: {n}"
-                f"\nResponse element: {response.data[n]}"
+                f"\nResponse element: {data[n]}"
                 f"\nExpected element: {expected_response[n]}",
             )
