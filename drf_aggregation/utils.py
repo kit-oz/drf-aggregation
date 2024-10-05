@@ -1,12 +1,12 @@
 from typing import Dict, Union
 
+from django.core.exceptions import ValidationError
 from django.db import models
-from rest_framework.exceptions import ValidationError
+
+from .settings import aggregation_settings
 
 
 class Aggregator:
-    DEFAULT_OTHER_GROUP_NAME = "Other"
-
     def __init__(self, queryset: models.QuerySet):
         """Get Aggregator instance
 
@@ -157,15 +157,15 @@ class Aggregator:
 
         return models.Q(**{"{}__in".format(field_name): top_groups})
 
+    @staticmethod
     def _merge_aggregations(
-        self,
         aggregation_1: list,
         aggregation_2: Union[dict, list],
         field_name: str,
         other_group_name: str = None,
     ) -> list:
         if not other_group_name:
-            other_group_name = self.DEFAULT_OTHER_GROUP_NAME
+            other_group_name = aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]
 
         merged_aggregation = list(aggregation_1)
         if isinstance(aggregation_2, dict):
