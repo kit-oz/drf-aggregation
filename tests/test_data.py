@@ -225,9 +225,11 @@ UNSORTED_GROUPS_TESTING = [
                 }
             },
             "group_by": "group1",
-            "limit_by_group": "group1",
-            "limit_by_aggregation": "value",
-            "show_other": True,
+            "limit": {
+                "by_group": "group1",
+                "by_aggregation": "value",
+                "show_other": True,
+            },
         },
         [
             {"group1": "1", "value": 2},
@@ -376,10 +378,12 @@ SORTED_GROUPS_TESTING = [
             },
             "group_by": "group1,group2",
             "order_by": "-group1__value,-group2",
-            "limit": 1,
-            "limit_by_group": "group1",
-            "limit_by_aggregation": "value",
-            "show_other": True,
+            "limit": {
+                "limit": 1,
+                "by_group": "group1",
+                "by_aggregation": "value",
+                "show_other": True,
+            },
         },
         [
             {"group1": "3", "group2": "3", "value": 1},
@@ -400,9 +404,11 @@ SORTED_GROUPS_TESTING = [
             },
             "group_by": "group1,group2",
             "order_by": "group2__value",
-            "limit": 1,
-            "limit_by_group": "group2",
-            "limit_by_aggregation": "value",
+            "limit": {
+                "limit": 1,
+                "by_group": "group2",
+                "by_aggregation": "value",
+            },
         },
         [{"group1": "3", "group2": "3", "value": 1}],
     ),
@@ -416,8 +422,10 @@ SORTED_GROUPS_TESTING = [
             },
             "group_by": "group1",
             "order_by": "-value",
-            "limit": 1,
-            "show_other": True,
+            "limit": {
+                "limit": 1,
+                "show_other": True,
+            },
         },
         [{"group1": "3", "value": 3}, {"group1": "Other", "value": 3}],
     ),
@@ -431,8 +439,10 @@ SORTED_GROUPS_TESTING = [
             },
             "group_by": "group1",
             "order_by": "-value",
-            "limit": 3,
-            "show_other": True,
+            "limit": {
+                "limit": 3,
+                "show_other": True,
+            },
         },
         [
             {"group1": "3", "value": 3},

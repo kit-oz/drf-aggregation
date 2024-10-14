@@ -11,3 +11,14 @@ Aggregation = TypedDict(
         "index_by_group": str | None,
     },
 )
+
+AggregationLimit = TypedDict(
+    "AggregationLimit",
+    {
+        "by_group": str,
+        "by_aggregation": str,
+        "limit": int | None,
+        "show_other": bool | None,
+        "other_label": str | None,
+    },
+)

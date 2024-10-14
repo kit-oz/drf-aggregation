@@ -5,7 +5,8 @@ from django.db import models
 
 from .aggregation import Aggregations
 from .filters import add_column_indexes
-from .types import Aggregation
+from .settings import aggregation_settings
+from .types import Aggregation, AggregationLimit
 from .utils import Aggregator
 
 
@@ -14,11 +15,7 @@ def get_aggregations(
     aggregations: Dict[str, Aggregation],
     group_by: List[str] | str = None,
     order_by: List[str] | str = None,
-    limit: int = 0,
-    limit_by_group: str = None,
-    limit_by_aggregation: str = None,
-    limit_show_other: bool = False,
-    limit_other_label: str = None,
+    limit: AggregationLimit | int = None,
 ):
     app_aggregations = Aggregations()
     if group_by:
@@ -66,6 +63,30 @@ def get_aggregations(
             queryset, annotations=annotations, group_indexes=group_indexes
         )
 
+    limit = (
+        (
+            limit.copy()
+            if isinstance(limit, dict)
+            else {
+                "limit": limit,
+            }
+        )
+        if limit
+        else None
+    )
+    limit = limit if limit and limit.get("limit", None) else None
+    if limit:
+        limit["by_group"] = limit.get(
+            "by_group", group_by[0] if group_by else None
+        ).replace(".", "__")
+        limit["by_aggregation"] = limit.get(
+            "by_aggregation", list(annotations.keys())[0]
+        ).replace(".", "__")
+        limit["show_other"] = limit.get("show_other", False)
+        limit["other_label"] = limit.get(
+            "other_label", aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]
+        )
+
     aggregator = Aggregator(queryset=queryset)
 
     return aggregator.get_database_aggregation(
@@ -73,10 +94,4 @@ def get_aggregations(
         group_by=group_by,
         order_by=order_by,
         limit=limit,
-        limit_by_group=limit_by_group.replace(".", "__") if limit_by_group else None,
-        limit_by_aggregation=(
-            limit_by_aggregation.replace(".", "__") if limit_by_aggregation else None
-        ),
-        limit_show_other=limit_show_other,
-        limit_other_label=limit_other_label,
     )

@@ -19,11 +19,7 @@ class AggregationMixin:
             aggregations=params.get("aggregations", None),
             group_by=params.get("group_by", None),
             order_by=params.get("order_by", None),
-            limit=int(params.get("limit", 0)),
-            limit_by_group=params.get("limit_by_group", None),
-            limit_by_aggregation=params.get("limit_by_aggregation", None),
-            limit_show_other=params.get("show_other", False),
-            limit_other_label=params.get("other_group_name", None),
+            limit=params.get("limit", None),
         )
 
         return JsonResponse(result, safe=False)
