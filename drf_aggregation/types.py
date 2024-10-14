@@ -18,6 +18,7 @@ AggregationLimit = TypedDict(
         "by_group": str,
         "by_aggregation": str,
         "limit": int | None,
+        "offset": int | None,
         "show_other": bool | None,
         "other_label": str | None,
     },

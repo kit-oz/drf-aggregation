@@ -82,6 +82,7 @@ def get_aggregations(
         limit["by_aggregation"] = limit.get(
             "by_aggregation", list(annotations.keys())[0]
         ).replace(".", "__")
+        limit["offset"] = limit.get("offset", None)
         limit["show_other"] = limit.get("show_other", False)
         limit["other_label"] = limit.get(
             "other_label", aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]

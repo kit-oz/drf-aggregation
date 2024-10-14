@@ -527,4 +527,67 @@ SORTED_GROUPS_TESTING = [
         [],
         {"search": "4"},
     ),
+    # LIMIT NUMBER OF RETURNED GROUPS WITH OFFSET
+    (
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                }
+            },
+            "group_by": "group1",
+            "order_by": "-value",
+            "limit": {
+                "limit": 1,
+                "offset": 1,
+            },
+        },
+        [{"group1": "1", "value": 2}],
+    ),
+    # LIMIT WITH GROUP BY MULTIPLE FIELDS WITH OFFSET
+    (
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                    "index_by_group": "group1",
+                }
+            },
+            "group_by": "group1,group2",
+            "order_by": "-group1__value,-group2",
+            "limit": {
+                "limit": 1,
+                "offset": 1,
+            },
+        },
+        [
+            {"group1": "1", "group2": "2", "value": 1},
+            {"group1": "1", "group2": "1", "value": 1},
+        ],
+    ),
+    # LIMIT WITH GROUP BY MULTIPLE FIELDS AND SHOW OTHER WITH OFFSET
+    (
+        {
+            "aggregations": {
+                "value": {
+                    "type": "count",
+                    "index_by_group": "group1",
+                }
+            },
+            "group_by": "group1,group2",
+            "order_by": "-group1__value,-group2",
+            "limit": {
+                "limit": 1,
+                "offset": 1,
+                "by_group": "group1",
+                "by_aggregation": "value",
+                "show_other": True,
+            },
+        },
+        [
+            {"group1": "1", "group2": "2", "value": 1},
+            {"group1": "1", "group2": "1", "value": 1},
+            {"group1": "Other", "group2": "1", "value": 1},
+        ],
+    ),
 ]

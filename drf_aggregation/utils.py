@@ -44,7 +44,7 @@ class Aggregator:
                     {"error": "'order_by' is required when limit is set"}
                 )
 
-            top_groups_filter = self._get_top_groups_filter(
+            (top_groups_filter, other_groups_filter) = self._get_top_groups_filter(
                 annotations=annotations, order_by=order_by, limit=limit
             )
             queryset = queryset.filter(top_groups_filter)
@@ -64,7 +64,7 @@ class Aggregator:
             annotations=annotations,
             group_by=group_by,
             order_by=order_by,
-            top_groups_filter=top_groups_filter,
+            top_groups_filter=other_groups_filter,
             limit=limit,
         )
         if not aggregation_without_top:
@@ -85,9 +85,8 @@ class Aggregator:
         :return: Dict {value: result}
         """
         aggregation = (
-            self.queryset.annotate(
-                _group=models.Value(1, output_field=models.IntegerField())
-            )
+            self.queryset.all()
+            .annotate(_group=models.Value(1, output_field=models.IntegerField()))
             .values("_group")
             .annotate(**annotations)
             .values(*annotations.keys())
@@ -103,7 +102,7 @@ class Aggregator:
         top_groups_filter: models.Q,
         limit: AggregationLimit = None,
     ):
-        queryset = self.queryset.exclude(top_groups_filter)
+        queryset = self.queryset.all().exclude(top_groups_filter)
         if queryset.count() == 0:
             return None
 
@@ -135,12 +134,23 @@ class Aggregator:
         limit: AggregationLimit,
     ) -> models.Q:
         field_name = limit["by_group"]
-        queryset = self.queryset.values(field_name)
-        queryset = queryset.annotate(**annotations)
-        queryset = queryset.order_by(*order_by)
-        top_groups = [group[field_name] for group in queryset[: limit["limit"]]]
+        offset = limit.get("offset", 0)
+        if not offset:
+            offset = 0
+        last_record_index = offset + limit.get("limit", 0)
 
-        return models.Q(**{"{}__in".format(field_name): top_groups})
+        queryset = self.queryset.all().values(field_name)
+        queryset = queryset.annotate(**annotations)
+        queryset = queryset.order_by(order_by[0])
+        top_groups_no_offset = [
+            group[field_name] for group in queryset[:last_record_index]
+        ]
+        top_groups = [group for group in top_groups_no_offset[offset:]]
+
+        return (
+            models.Q(**{"{}__in".format(field_name): top_groups}),
+            models.Q(**{"{}__in".format(field_name): top_groups_no_offset}),
+        )
 
     @staticmethod
     def _merge_aggregations(
