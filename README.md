@@ -97,6 +97,7 @@ result = get_aggregations(
 - order_by - list of fields to sort the result
 - limit - number of groups to return or dictionary with settings:
     - limit - number of groups to return
+    - offset - shift start of returned groups
     - by_group - which group to limit the result by, by default - the first field for grouping
     - by_aggregation - which aggregation to limit the result by, by default - the first declared aggregation
     - show_other - return the remaining records as one additional group
