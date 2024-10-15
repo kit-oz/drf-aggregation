@@ -63,30 +63,27 @@ def get_aggregations(
             queryset, annotations=annotations, group_indexes=group_indexes
         )
 
-    limit = (
-        (
+    if limit:
+        limit = (
             limit.copy()
             if isinstance(limit, dict)
             else {
                 "limit": limit,
             }
         )
-        if limit
-        else None
-    )
-    limit = limit if limit and limit.get("limit", None) else None
+        limit = limit if limit and limit.get("limit", None) else None
+
     if limit:
-        limit["by_group"] = limit.get(
-            "by_group", group_by[0] if group_by else None
-        ).replace(".", "__")
-        limit["by_aggregation"] = limit.get(
-            "by_aggregation", list(annotations.keys())[0]
-        ).replace(".", "__")
-        limit["offset"] = limit.get("offset", None)
-        limit["show_other"] = limit.get("show_other", False)
-        limit["other_label"] = limit.get(
-            "other_label", aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]
-        )
+        if not limit.get("by_group", None) and group_by and group_by[0]:
+            limit["by_group"] = group_by[0]
+        limit["by_group"] = limit["by_group"].replace(".", "__")
+
+        if not limit.get("by_aggregation", None):
+            limit["by_aggregation"] = list(annotations.keys())[0]
+        limit["by_aggregation"] = limit["by_aggregation"].replace(".", "__")
+
+        if not limit.get("other_label", None):
+            limit["other_label"] = aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]
 
     aggregator = Aggregator(queryset=queryset)
 
