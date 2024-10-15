@@ -2,5 +2,3 @@
 djangorestframework~=3.12
 drf-complex-filter~=1.0
 parameterized~=0.7
-pbr~=5.5
-psycopg2-binary~=2.8
