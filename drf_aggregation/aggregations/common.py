@@ -21,7 +21,7 @@ class CommonAggregations:
                 code=422,
             )
 
-        return {f"{name}": models.Count(field, distinct=True)}
+        return {f"{name}": models.Count(field.replace(".", "__"), distinct=True)}
 
     @staticmethod
     def sum(aggregation: Aggregation, queryset: models.QuerySet):
@@ -34,7 +34,7 @@ class CommonAggregations:
                 code=422,
             )
 
-        return {f"{name}": models.Sum(field)}
+        return {f"{name}": models.Sum(field.replace(".", "__"))}
 
     @staticmethod
     def average(aggregation: Aggregation, queryset: models.QuerySet):
@@ -47,7 +47,7 @@ class CommonAggregations:
                 code=422,
             )
 
-        return {f"{name}": models.Avg(field)}
+        return {f"{name}": models.Avg(field.replace(".", "__"))}
 
     @staticmethod
     def minimum(aggregation: Aggregation, queryset: models.QuerySet):
@@ -60,7 +60,7 @@ class CommonAggregations:
                 code=422,
             )
 
-        return {f"{name}": models.Min(field)}
+        return {f"{name}": models.Min(field.replace(".", "__"))}
 
     @staticmethod
     def maximum(aggregation: Aggregation, queryset: models.QuerySet):
@@ -73,4 +73,4 @@ class CommonAggregations:
                 code=422,
             )
 
-        return {f"{name}": models.Max(field)}
+        return {f"{name}": models.Max(field.replace(".", "__"))}

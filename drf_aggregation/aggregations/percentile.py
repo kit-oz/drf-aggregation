@@ -16,6 +16,7 @@ class PercentileAggregation:
         field = aggregation.get("field", None)
         if not field:
             error["field"] = "required for aggregation type 'percent'"
+        field = field.replace(".", "__")
 
         percentile = aggregation.get("percentile", None)
         if not percentile:

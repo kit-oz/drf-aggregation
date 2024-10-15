@@ -19,20 +19,10 @@ def get_aggregations(
 ):
     app_aggregations = Aggregations()
     if group_by:
-        group_by = [
-            field.replace(".", "__")
-            for field in (
-                group_by.split(",") if isinstance(group_by, str) else group_by
-            )
-        ]
+        group_by = group_by.split(",") if isinstance(group_by, str) else group_by
 
     if order_by:
-        order_by = [
-            field.replace(".", "__")
-            for field in (
-                order_by.split(",") if isinstance(order_by, str) else order_by
-            )
-        ]
+        order_by = order_by.split(",") if isinstance(order_by, str) else order_by
 
     annotations = {}
     group_indexes = {}
@@ -55,7 +45,6 @@ def get_aggregations(
 
         index_by_group = aggregation.get("index_by_group", None)
         if index_by_group:
-            index_by_group = index_by_group.replace(".", "__")
             group_indexes[index_by_group] = aggregation["name"]
 
     if group_indexes:
@@ -64,23 +53,15 @@ def get_aggregations(
         )
 
     if limit:
-        limit = (
-            limit.copy()
-            if isinstance(limit, dict)
-            else {
-                "limit": limit,
-            }
-        )
+        limit = limit.copy() if isinstance(limit, dict) else {"limit": limit}
         limit = limit if limit and limit.get("limit", None) else None
 
     if limit:
         if not limit.get("by_group", None) and group_by and group_by[0]:
             limit["by_group"] = group_by[0]
-        limit["by_group"] = limit["by_group"].replace(".", "__")
 
         if not limit.get("by_aggregation", None):
             limit["by_aggregation"] = list(annotations.keys())[0]
-        limit["by_aggregation"] = limit["by_aggregation"].replace(".", "__")
 
         if not limit.get("other_label", None):
             limit["other_label"] = aggregation_settings["DEFAULT_OTHER_GROUP_NAME"]

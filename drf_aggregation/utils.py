@@ -35,6 +35,9 @@ class Aggregator:
         if not group_by:
             return self.get_simple_aggregation(annotations)
 
+        if order_by:
+            order_by = [field.replace(".", "__") for field in order_by]
+
         queryset = self.queryset.all()
         top_groups_filter = None
 
@@ -52,6 +55,11 @@ class Aggregator:
         if not queryset.exists():
             return []
 
+        for field in group_by:
+            if "." in field:
+                queryset = queryset.annotate(
+                    **{f"{field}": models.F(field.replace(".", "__"))}
+                )
         queryset = queryset.values(*group_by)
         queryset = queryset.annotate(**annotations)
         if order_by:
@@ -133,7 +141,7 @@ class Aggregator:
         order_by: List[str],
         limit: AggregationLimit,
     ) -> models.Q:
-        field_name = limit["by_group"]
+        field_name = limit["by_group"].replace(".", "__")
         offset = limit.get("offset", 0)
         if not offset:
             offset = 0

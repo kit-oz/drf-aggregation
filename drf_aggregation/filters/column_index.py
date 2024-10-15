@@ -10,6 +10,7 @@ def add_column_indexes(
 ):
     indexes = {}
     for field_name, aggregation_name in group_indexes.items():
+        field_name = field_name.replace(".", "__")
         index_column = f"{field_name}__{aggregation_name}"
         indexes[index_column] = _get_sorting_annotation(
             queryset=queryset,
