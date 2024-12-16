@@ -1,7 +1,8 @@
 # Django Aggregation
 
-[![codecov badge](https://codecov.io/gh/kit-oz/drf-aggregation/branch/main/graph/badge.svg?token=X1RWDJI9NG)](https://codecov.io/gh/kit-oz/drf-aggregation)
+[![Published on Django Packages](https://img.shields.io/badge/Published%20on-Django%20Packages-0c3c26)](https://djangopackages.org/packages/p/drf-aggregation/)
 [![PyPI version](https://badge.fury.io/py/drf-aggregation.svg)](https://badge.fury.io/py/drf-aggregation)
+[![codecov badge](https://codecov.io/gh/kit-oz/drf-aggregation/branch/main/graph/badge.svg?token=X1RWDJI9NG)](https://codecov.io/gh/kit-oz/drf-aggregation)
 [![Python Versions](https://img.shields.io/pypi/pyversions/drf-aggregation.svg)](https://pypi.org/project/drf-aggregation/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -11,7 +12,7 @@ This repository provides tools to perform complex aggregations with ease, levera
 ## Key Features
 
 - Perform multiple aggregations simultaneously
-- Calculate percentiles and percentages (requires additional setup)
+- Calculate percentiles (PostgreSQL) and percentages with minimal additional setup
 - Group data by multiple fields
 - Generate time series data (PostgreSQL, MySQL)
 - Flexible result limiting and pagination
