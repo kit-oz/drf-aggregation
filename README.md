@@ -1,11 +1,12 @@
-# Django Rest Framework Aggregation
+# Django Aggregation
 
 [![codecov badge](https://codecov.io/gh/kit-oz/drf-aggregation/branch/main/graph/badge.svg?token=X1RWDJI9NG)](https://codecov.io/gh/kit-oz/drf-aggregation)
 [![PyPI version](https://badge.fury.io/py/drf-aggregation.svg)](https://badge.fury.io/py/drf-aggregation)
 [![Python Versions](https://img.shields.io/pypi/pyversions/drf-aggregation.svg)](https://pypi.org/project/drf-aggregation/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-A Django Rest Framework (DRF) mixin for performing complex data aggregations with ease.
+Get DB aggregations using Django ORM for efficient data analysis and reporting.
+This repository provides tools to perform complex aggregations with ease, leveraging the power of Django's ORM.
 
 ## Key Features
 
