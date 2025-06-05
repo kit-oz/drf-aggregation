@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Union
 
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -13,9 +13,9 @@ from .utils import Aggregator
 def get_aggregations(
     queryset: models.QuerySet,
     aggregations: Dict[str, Aggregation],
-    group_by: List[str] | str = None,
-    order_by: List[str] | str = None,
-    limit: AggregationLimit | int = None,
+    group_by: Union[List[str], str] = None,
+    order_by: Union[List[str], str] = None,
+    limit: Union[AggregationLimit, int] = None,
 ):
     app_aggregations = Aggregations()
     if group_by:
